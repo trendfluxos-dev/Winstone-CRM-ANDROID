@@ -65,7 +65,7 @@ export class MockAuthRepository implements IAuthRepository {
 
     const name = credentials.identifier.includes('@')
       ? credentials.identifier.split('@')[0].replace('.', ' ')
-      : 'Tanvir Ahmed';
+      : 'Sales Agent';
 
     const cleanName = name
       .split(' ')
@@ -74,13 +74,13 @@ export class MockAuthRepository implements IAuthRepository {
 
     this.currentAgent = {
       ...mockAgent,
-      name: cleanName || 'Tanvir Ahmed',
+      name: cleanName || 'Sales Agent',
       email: credentials.identifier.includes('@')
         ? credentials.identifier
-        : 'tanvir.ahmed@winstoneproperties.com',
-      employeeId: credentials.identifier.startsWith('WPL')
+        : 'agent.win2601@winstoneproperties.com',
+      employeeId: credentials.identifier.startsWith('WPL') || credentials.identifier.startsWith('WIN')
         ? credentials.identifier
-        : 'WPL-AGT-0842',
+        : 'WIN2601',
     };
 
     this.currentSession = {

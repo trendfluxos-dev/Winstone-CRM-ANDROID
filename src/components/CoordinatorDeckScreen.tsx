@@ -33,10 +33,10 @@ export const CoordinatorDeckScreen: React.FC<CoordinatorDeckScreenProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const agentsList = [
-    { name: 'Tanvir Ahmed', employeeId: 'WIN2601', activeLeads: 14, capacity: '85%' },
-    { name: 'Nusrat Jahan', employeeId: 'WIN2602', activeLeads: 9, capacity: '60%' },
-    { name: 'Mahmudul Hasan', employeeId: 'WIN2603', activeLeads: 18, capacity: '95%' },
-    { name: 'Farzana Rahman', employeeId: 'WIN2604', activeLeads: 7, capacity: '45%' },
+    { name: 'Sales Agent 01', employeeId: 'WIN2601', activeLeads: 14, capacity: '85%' },
+    { name: 'Sales Agent 02', employeeId: 'WIN2605', activeLeads: 9, capacity: '60%' },
+    { name: 'Sales Agent 03', employeeId: 'WIN2606', activeLeads: 18, capacity: '95%' },
+    { name: 'Sales Agent 04', employeeId: 'WIN2607', activeLeads: 7, capacity: '45%' },
   ];
 
   const filteredLeads = leads.filter((lead) => {

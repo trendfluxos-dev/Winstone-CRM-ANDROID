@@ -30,10 +30,10 @@ export const ExecutiveHqScreen: React.FC<ExecutiveHqScreenProps> = ({ leads }) =
   ];
 
   const agentLeaderboard = [
-    { name: 'Tanvir Ahmed', dealsClosed: '৳ 18.2 Cr', conversion: '32%', rank: '1' },
-    { name: 'Nusrat Jahan', dealsClosed: '৳ 14.8 Cr', conversion: '29%', rank: '2' },
-    { name: 'Mahmudul Hasan', dealsClosed: '৳ 12.0 Cr', conversion: '26%', rank: '3' },
-    { name: 'Farzana Rahman', dealsClosed: '৳ 9.5 Cr', conversion: '22%', rank: '4' },
+    { name: 'Sales Agent 01', dealsClosed: '৳ 18.2 Cr', conversion: '32%', rank: '1' },
+    { name: 'Sales Agent 02', dealsClosed: '৳ 14.8 Cr', conversion: '29%', rank: '2' },
+    { name: 'Sales Agent 03', dealsClosed: '৳ 12.0 Cr', conversion: '26%', rank: '3' },
+    { name: 'Sales Agent 04', dealsClosed: '৳ 9.5 Cr', conversion: '22%', rank: '4' },
   ];
 
   return (

@@ -210,7 +210,7 @@ export class AgentAuthRepository implements IAuthRepository {
       } : {
         id: 'winstone-agent-id',
         employee_id: rawIdentifier.includes('@') ? 'WIN2601' : rawIdentifier,
-        name: 'Tanvir Ahmed',
+        name: 'Sales Agent',
         phone: '+880 1805-049668',
         sim_number: '+880 1805-049668',
         role: 'Senior Property Consultant',

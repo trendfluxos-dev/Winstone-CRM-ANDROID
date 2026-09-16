@@ -168,7 +168,7 @@ export default function App() {
   };
 
   // Authentication Handlers
-  const handleLogin = async (credentials: LoginCredentials) => {
+  const handleLogin = async (credentials: LoginCredentials, targetTab?: NavTab) => {
     setIsAuthLoading(true);
     setAuthError(null);
     try {
@@ -176,6 +176,29 @@ export default function App() {
       setSession(newSession);
       setAgent(newSession.agent);
       await loadRepositoryData();
+      if (targetTab) {
+        setCurrentTab(targetTab);
+      } else if (
+        newSession.agent.role?.toLowerCase().includes('coordinator') ||
+        credentials.identifier.toUpperCase().includes('COORD') ||
+        credentials.identifier === 'WIN2602'
+      ) {
+        setCurrentTab('coordinator');
+      } else if (
+        newSession.agent.role?.toLowerCase().includes('commercial') ||
+        newSession.agent.role?.toLowerCase().includes('executive') ||
+        credentials.identifier === 'WIN2603'
+      ) {
+        setCurrentTab('executive');
+      } else if (
+        newSession.agent.role?.toLowerCase().includes('it') ||
+        newSession.agent.role?.toLowerCase().includes('telephony & bridge') ||
+        credentials.identifier === 'WIN2604'
+      ) {
+        setCurrentTab('it_console');
+      } else {
+        setCurrentTab('dashboard');
+      }
       showToast(`Welcome, ${newSession.agent.name}! Session authenticated.`);
     } catch (err: any) {
       setAuthError(err?.message || 'Login failed. Please verify credentials.');
@@ -605,7 +628,7 @@ export default function App() {
       campaign: 'Gulshan Luxury Duplex Campaign Q3',
       temperature: 'Hot',
       operationalCategory: 'A',
-      assignedAgent: agent?.name || 'Tanvir Ahmed',
+      assignedAgent: agent?.name || 'Sales Agent',
       createdDate: '2026-09-15',
       lastContact: 'Never',
       nextFollowUp: 'Today, within 15 mins',

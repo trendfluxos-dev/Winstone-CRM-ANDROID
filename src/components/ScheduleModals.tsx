@@ -678,7 +678,7 @@ export const AddNewLeadModal: React.FC<AddNewLeadModalProps> = ({ onSave, onClos
                 setName(e.target.value);
                 setError(null);
               }}
-              placeholder="e.g. Engr. Tanvir Morshed"
+              placeholder="e.g. Prospect Full Name"
               className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#B8934A] focus:outline-none"
             />
           </div>
