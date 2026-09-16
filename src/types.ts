@@ -163,7 +163,19 @@ export interface PerformanceData {
   thirtyDays: MetricBreakdown;
 }
 
-export type NavTab = 'dashboard' | 'leads' | 'followups' | 'performance' | 'profile';
+export type NavTab =
+  | 'dashboard'
+  | 'leads'
+  | 'followups'
+  | 'performance'
+  | 'profile'
+  | 'coordinator'
+  | 'executive'
+  | 'it_console';
+export type NavigationTab = NavTab;
+export type TodayMetrics = MetricBreakdown;
+export type FollowUpScheduleItem = FollowUp;
+export type AgentProfile = Agent;
 
 // ==========================================
 // UI State & Architecture Types

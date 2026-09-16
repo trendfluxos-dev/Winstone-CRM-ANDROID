@@ -3,11 +3,10 @@ import {
   Sparkles,
   Award,
   AlertTriangle,
-  ArrowRight,
-  TrendingUp,
   RefreshCw,
   Bot,
   CheckCircle2,
+  TrendingUp,
 } from 'lucide-react';
 import { CoachResponse } from '../types';
 import { crmDataSource } from '../api/crmDataSource';
@@ -65,25 +64,25 @@ export const CoachInsightsCard: React.FC<CoachInsightsCardProps> = ({
   return (
     <div
       id="crm-coach-insights-card"
-      className={`bg-gradient-to-br from-emerald-950 via-neutral-900 to-neutral-950 text-white rounded-2xl p-4 border border-emerald-500/30 shadow-lg relative overflow-hidden ${className}`}
+      className={`bg-[#FDFBF7] text-[#0F172A] rounded-2xl p-4 border border-[#E8DFCF] shadow-xs relative overflow-hidden ${className}`}
     >
       {/* Decorative ambient background */}
-      <div className="absolute -top-12 -right-12 w-40 h-40 bg-emerald-600/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -top-12 -right-12 w-40 h-40 bg-[#FAF0DB]/50 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300">
-            <Bot className="w-4 h-4" />
+      <div className="flex items-center justify-between pb-3 border-b border-[#E8DFCF]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#FAF6EE] border border-[#E2D5B8] flex items-center justify-center text-[#8C6B24] shadow-2xs">
+            <Bot className="w-4 h-4 text-[#B8934A]" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="text-xs font-bold text-white">Winstone AI Sales Coach</h3>
-              <span className="bg-emerald-500/20 text-emerald-300 text-[9px] font-mono px-1.5 py-0.2 rounded">
-                GET /agent/coach
+              <h3 className="text-xs font-bold text-[#0F172A]">Winstone AI Sales Intelligence</h3>
+              <span className="bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold">
+                AI Diagnostics
               </span>
             </div>
-            <p className="text-[10px] text-neutral-400">
+            <p className="text-[10px] text-[#64748B]">
               Personalized performance diagnostics & daily playbook
             </p>
           </div>
@@ -92,31 +91,31 @@ export const CoachInsightsCard: React.FC<CoachInsightsCardProps> = ({
         <button
           onClick={loadCoach}
           disabled={isLoading}
-          className="text-neutral-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
+          className="text-[#64748B] hover:text-[#0F172A] p-1.5 rounded-lg hover:bg-white transition-colors cursor-pointer"
           title="Refresh AI Coach Insights"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-emerald-400' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#B8934A]' : ''}`} />
         </button>
       </div>
 
       {/* Summary */}
       {coachData && (
-        <div className="mt-3 space-y-3.5">
-          <p className="text-xs text-emerald-100/90 leading-relaxed italic bg-emerald-900/30 p-2.5 rounded-xl border border-emerald-500/20">
+        <div className="mt-3 space-y-3">
+          <p className="text-xs text-[#4A3F2C] leading-relaxed italic bg-white p-3 rounded-xl border border-[#E8DFCF] shadow-2xs">
             "{coachData.summary}"
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {/* Strengths */}
-            <div className="space-y-1.5 bg-neutral-900/80 p-3 rounded-xl border border-neutral-800">
-              <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px]">
-                <Award className="w-3.5 h-3.5" />
+            <div className="space-y-1.5 bg-white p-3 rounded-xl border border-[#E8DFCF] shadow-2xs">
+              <div className="flex items-center gap-1.5 text-[#8C6B24] font-bold text-[11px]">
+                <Award className="w-3.5 h-3.5 text-[#B8934A]" />
                 <span>Verified Strengths</span>
               </div>
               <ul className="space-y-1">
                 {coachData.strengths.map((st, i) => (
-                  <li key={i} className="text-[11px] text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-emerald-400 shrink-0 mt-0.5">•</span>
+                  <li key={i} className="text-[11px] text-[#334155] flex items-start gap-1.5">
+                    <span className="text-[#B8934A] shrink-0 mt-0.5 font-bold">•</span>
                     <span>{st}</span>
                   </li>
                 ))}
@@ -124,15 +123,15 @@ export const CoachInsightsCard: React.FC<CoachInsightsCardProps> = ({
             </div>
 
             {/* Risks */}
-            <div className="space-y-1.5 bg-neutral-900/80 p-3 rounded-xl border border-neutral-800">
-              <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px]">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <span>Identified Pipeline Risks</span>
+            <div className="space-y-1.5 bg-white p-3 rounded-xl border border-[#E8DFCF] shadow-2xs">
+              <div className="flex items-center gap-1.5 text-amber-800 font-bold text-[11px]">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                <span>Identified Friction / Risks</span>
               </div>
               <ul className="space-y-1">
                 {coachData.risks.map((rk, i) => (
-                  <li key={i} className="text-[11px] text-neutral-300 flex items-start gap-1.5">
-                    <span className="text-amber-400 shrink-0 mt-0.5">•</span>
+                  <li key={i} className="text-[11px] text-[#334155] flex items-start gap-1.5">
+                    <span className="text-amber-600 shrink-0 mt-0.5 font-bold">•</span>
                     <span>{rk}</span>
                   </li>
                 ))}
@@ -141,21 +140,21 @@ export const CoachInsightsCard: React.FC<CoachInsightsCardProps> = ({
           </div>
 
           {/* Next Steps */}
-          <div className="space-y-1.5 bg-neutral-900/90 p-3 rounded-xl border border-emerald-900/50">
-            <div className="flex items-center justify-between text-[11px] font-bold text-white mb-1">
-              <span className="flex items-center gap-1.5 text-emerald-300">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="space-y-1.5 bg-white p-3 rounded-xl border border-[#E8DFCF] shadow-2xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-[#0F172A] mb-1">
+              <span className="flex items-center gap-1.5 text-[#8C6B24]">
+                <TrendingUp className="w-3.5 h-3.5 text-[#B8934A]" />
                 Recommended Agent Action Plan
               </span>
-              <span className="text-[10px] text-neutral-400 font-normal">Today's Focus</span>
+              <span className="text-[10px] text-[#64748B] font-normal">Today's Focus</span>
             </div>
             <div className="space-y-1.5">
               {coachData.next_steps.map((step, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2 text-[11px] text-neutral-200 bg-neutral-800/60 p-1.5 rounded-lg border border-neutral-700/60"
+                  className="flex items-start gap-2 text-[11px] text-[#334155] bg-[#FDFBF7] p-2 rounded-lg border border-[#EFEBE3]"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#B8934A] shrink-0 mt-0.5" />
                   <span>{step}</span>
                 </div>
               ))}

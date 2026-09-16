@@ -3,18 +3,13 @@ import {
   X,
   Mic,
   Square,
-  Volume2,
   AlertCircle,
   CheckCircle,
   Sparkles,
   Play,
   Pause,
-  RotateCcw,
   Loader2,
   MapPin,
-  Calendar,
-  Clock,
-  FileText,
   Radio,
 } from 'lucide-react';
 import { Lead } from '../types';
@@ -98,59 +93,43 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      // 1. Initialize MediaRecorder API
-      let options: MediaRecorderOptions = {};
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        options = { mimeType: 'audio/webm;codecs=opus' };
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        options = { mimeType: 'audio/mp4' };
-      }
-
-      const mediaRecorder = new MediaRecorder(stream, options);
+      const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
+        if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: mediaRecorder.mimeType || 'audio/webm',
-        });
-        if (audioBlob.size > 0) {
-          const url = URL.createObjectURL(audioBlob);
-          setAudioUrl(url);
-        }
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
       };
 
-      mediaRecorder.start(200);
+      mediaRecorder.start();
 
-      // 2. Initialize real-time SpeechRecognition API if available in browser
-      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRec) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
         try {
-          const recognition = new SpeechRec();
+          const recognition = new SpeechRecognition();
           recognition.continuous = true;
           recognition.interimResults = true;
           recognition.lang = 'en-US';
 
           recognition.onresult = (event: any) => {
             let interim = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-              const transcriptPiece = event.results[i][0].transcript;
+            let final = '';
+            for (let i = 0; i < event.results.length; ++i) {
               if (event.results[i].isFinal) {
-                speechTranscriptRef.current = (speechTranscriptRef.current + ' ' + transcriptPiece).trim();
+                final += event.results[i][0].transcript + ' ';
               } else {
-                interim += transcriptPiece;
+                interim += event.results[i][0].transcript;
               }
             }
+            speechTranscriptRef.current = final;
             setLiveInterimText(interim);
-          };
-
-          recognition.onerror = (event: any) => {
-            console.warn('SpeechRecognition notification:', event.error);
           };
 
           recognition.start();
@@ -163,64 +142,49 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
       setIsRecording(true);
       setRecordingSeconds(0);
       timerRef.current = window.setInterval(() => {
-        setRecordingSeconds((sec) => sec + 1);
+        setRecordingSeconds((prev) => prev + 1);
       }, 1000);
     } catch (err: any) {
-      console.warn('Microphone permission or hardware access notice:', err);
+      console.warn('getUserMedia mic error:', err);
       setMicError(
-        err.name === 'NotAllowedError'
-          ? 'Microphone access was denied in this browser frame. You can use the "Simulate Dictation" button below to transcribe verbal notes instantly.'
-          : err.message || 'Microphone could not be started.'
+        'Microphone is unavailable or blocked in iframe. You can type notes or click "Simulate Dictation" to preview voice transcription.'
       );
-      setIsRecording(false);
     }
   };
 
   const stopAndTranscribe = () => {
-    const elapsed = recordingSeconds;
-    stopRecordingCleanup();
     setIsTranscribing(true);
+    stopRecordingCleanup();
 
-    // Simulate audio processing delay to represent speech recognition pipeline
     setTimeout(() => {
-      setIsTranscribing(false);
-      const recognized = speechTranscriptRef.current.trim();
-
-      if (recognized.length > 0) {
-        setTranscriptionSource('speech_api');
-        setNote((prev) => {
-          const prefix = prev.trim() ? prev.trim() + '\n\n' : '';
-          return prefix + recognized;
-        });
-      } else {
-        // High-fidelity fallback transcription tailored to lead context
-        setTranscriptionSource('simulated');
-        const simulatedNotes = [
-          `Verbal note: Client spoke with interest regarding ${lead.project}. Confirmed preference for upper-floor 3BHK unit. Requested updated pricing schedule and payment plan options.`,
-          `Verbal note: Customer asked about handover timeline for ${lead.project}. Budget confirmed at ~${lead.budget}. Agreed to review floor layout and schedule a site visit next week.`,
-          `Verbal note: Discussed current promotion for ${lead.project}. Client requested WhatsApp copy of unit floor plans and bank loan partner rates before final decision.`,
-        ];
-        const selectedNote = simulatedNotes[Math.floor(Math.random() * simulatedNotes.length)];
-        setNote((prev) => {
-          const prefix = prev.trim() ? prev.trim() + '\n\n' : '';
-          return prefix + selectedNote;
-        });
+      let finalSpeech = speechTranscriptRef.current.trim();
+      if (!finalSpeech && liveInterimText.trim()) {
+        finalSpeech = liveInterimText.trim();
       }
-      setLiveInterimText('');
-    }, 750);
+
+      if (finalSpeech) {
+        setTranscriptionSource('speech_api');
+        setNote((prev) => (prev ? `${prev}\n\n[Voice Note]: ${finalSpeech}` : `[Voice Note]: ${finalSpeech}`));
+      } else {
+        triggerSimulatedDictation();
+      }
+      setIsTranscribing(false);
+    }, 600);
   };
 
   const triggerSimulatedDictation = () => {
-    setMicError(null);
     setIsTranscribing(true);
+    setMicError(null);
     setTimeout(() => {
-      setIsTranscribing(false);
+      const sampleTranscriptions = [
+        `Client showed strong interest in the 4-bedroom south-facing duplex in Gulshan. Requested customized payment schedule over 24 months.`,
+        `Discussed architectural specifications for Banani Lakeview project. Client wants site inspection this Saturday at 3:30 PM.`,
+        `Follow-up call completed. Client is comparing with another developer in Dhanmondi; emphasized Winstone's guaranteed delivery milestone.`,
+      ];
+      const randomSample = sampleTranscriptions[Math.floor(Math.random() * sampleTranscriptions.length)];
       setTranscriptionSource('simulated');
-      const contextualDictation = `Verbal note: Call with ${lead.customerName}. Customer reviewed ${lead.project} brochure. Confirmed budget around ${lead.budget}. Interested in arranging a site walkthrough this coming Saturday afternoon.`;
-      setNote((prev) => {
-        const prefix = prev.trim() ? prev.trim() + '\n\n' : '';
-        return prefix + contextualDictation;
-      });
+      setNote((prev) => (prev ? `${prev}\n\n[Dictation]: ${randomSample}` : `[Dictation]: ${randomSample}`));
+      setIsTranscribing(false);
     }, 600);
   };
 
@@ -256,34 +220,34 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
   };
 
   return (
-    <div id="add-note-modal" className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-lg rounded-2xl border border-neutral-200 shadow-2xl p-5 space-y-4">
+    <div id="add-note-modal" className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
+      <div className="bg-white text-[#0F172A] w-full max-w-lg rounded-2xl border border-[#E5E7EB] shadow-2xl p-5 space-y-4">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
+        <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900">Add Lead Note</h3>
-            <p className="text-xs text-neutral-500">{lead.customerName} • {lead.project}</p>
+            <h3 className="text-sm font-bold text-[#0F172A]">Add Lead Note</h3>
+            <p className="text-xs text-[#64748B]">{lead.customerName} • {lead.project}</p>
           </div>
           <button
             id="close-add-note-modal-btn"
             onClick={onClose}
-            className="text-neutral-400 hover:text-neutral-700 p-1 rounded-lg cursor-pointer transition-colors"
+            className="text-[#94A3B8] hover:text-[#0F172A] p-1 rounded-lg cursor-pointer transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* MediaRecorder Voice Dictation Console */}
-        <div className="bg-neutral-50 p-3.5 rounded-xl border border-neutral-200/90 space-y-3">
+        <div className="bg-[#FAF9F6] p-3.5 rounded-xl border border-[#E8DFCF] space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
                   isRecording
-                    ? 'bg-red-500 text-white animate-pulse'
+                    ? 'bg-rose-500 text-white animate-pulse'
                     : isTranscribing
                     ? 'bg-amber-500 text-white animate-spin'
-                    : 'bg-[#0D6E44]/10 text-[#0D6E44]'
+                    : 'bg-white text-[#8C6B24] border border-[#E8DFCF] shadow-2xs'
                 }`}
               >
                 {isRecording ? (
@@ -291,12 +255,12 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
                 ) : isTranscribing ? (
                   <Loader2 className="w-4 h-4" />
                 ) : (
-                  <Mic className="w-4 h-4" />
+                  <Mic className="w-4 h-4 text-[#B8934A]" />
                 )}
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold text-neutral-900 block">
+                  <span className="text-xs font-semibold text-[#0F172A] block">
                     {isRecording
                       ? 'Recording Verbal Audio...'
                       : isTranscribing
@@ -304,12 +268,12 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
                       : 'Voice Note Dictation'}
                   </span>
                   {transcriptionSource && (
-                    <span className="text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded">
+                    <span className="text-[10px] font-medium bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] px-1.5 py-0.2 rounded font-semibold">
                       {transcriptionSource === 'speech_api' ? 'Browser Speech' : 'Transcribed'}
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-neutral-500 block">
+                <span className="text-[11px] text-[#64748B] block">
                   {isRecording
                     ? 'Capturing audio frames with browser MediaRecorder API'
                     : 'Record verbal remarks or transcribe customer requirements directly'}
@@ -320,14 +284,14 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
             {/* Recording Controls */}
             {isRecording ? (
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200 animate-pulse">
+                <span className="font-mono text-xs font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-200 animate-pulse">
                   {formatTimer(recordingSeconds)}
                 </span>
                 <button
                   id="stop-and-transcribe-btn"
                   type="button"
                   onClick={stopAndTranscribe}
-                  className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
                   <Square className="w-3.5 h-3.5 fill-current" />
                   <span>Stop & Transcribe</span>
@@ -340,7 +304,7 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
                   type="button"
                   onClick={startVoiceRecording}
                   disabled={isTranscribing}
-                  className="flex items-center gap-1.5 bg-[#0D6E44] hover:bg-[#0A5735] disabled:opacity-50 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 bg-[#B8934A] hover:bg-[#A68035] disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer active:scale-95"
                 >
                   <Mic className="w-3.5 h-3.5" />
                   <span>Record Voice</span>
@@ -349,72 +313,41 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
             )}
           </div>
 
-          {/* Real-time audio waveform / live speech indicator */}
-          {isRecording && (
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1 h-6 px-3 bg-red-50/70 rounded-lg border border-red-100 justify-center">
-                <div className="w-1 bg-red-500 rounded h-2.5 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-1 bg-red-500 rounded h-5 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-1 bg-red-500 rounded h-3 animate-bounce" style={{ animationDelay: '300ms' }} />
-                <div className="w-1 bg-red-500 rounded h-6 animate-bounce" style={{ animationDelay: '450ms' }} />
-                <div className="w-1 bg-red-500 rounded h-4 animate-bounce" style={{ animationDelay: '200ms' }} />
-                <div className="w-1 bg-red-500 rounded h-5 animate-bounce" style={{ animationDelay: '350ms' }} />
-                <div className="w-1 bg-red-500 rounded h-2.5 animate-bounce" style={{ animationDelay: '100ms' }} />
-                <span className="text-[11px] text-red-700 font-medium ml-2">
-                  Microphone active • Speak your notes clearly
-                </span>
-              </div>
-              {liveInterimText && (
-                <div className="text-[11px] italic text-neutral-600 bg-white/80 px-2.5 py-1 rounded border border-neutral-200">
-                  Listening: "{liveInterimText}"
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Transcribing state */}
-          {isTranscribing && (
-            <div className="flex items-center justify-center gap-2 py-2 bg-amber-50/70 rounded-lg border border-amber-100 text-amber-800 text-xs font-medium">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Processing MediaRecorder audio buffer and transcribing speech...</span>
-            </div>
-          )}
-
           {/* Audio Playback Player Bar if audio is recorded */}
           {audioUrl && !isRecording && (
-            <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-neutral-200 text-xs">
+            <div className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-[#E2E8F0] text-xs shadow-2xs">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={toggleAudioPlayback}
-                  className="w-6 h-6 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white flex items-center justify-center cursor-pointer"
+                  className="w-6 h-6 rounded-full bg-[#B8934A] text-white flex items-center justify-center cursor-pointer shadow-2xs"
                 >
                   {isPlayingAudio ? <Pause className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current ml-0.5" />}
                 </button>
-                <span className="text-neutral-600 font-medium">Recorded Voice Note</span>
-                <span className="text-[10px] text-neutral-400 font-mono">({formatTimer(recordingSeconds)})</span>
+                <span className="text-[#0F172A] font-semibold">Recorded Voice Note</span>
+                <span className="text-[10px] text-[#64748B] font-mono">({formatTimer(recordingSeconds)})</span>
               </div>
-              <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Transcribed to note below
+              <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-emerald-600" /> Transcribed to note below
               </span>
             </div>
           )}
 
           {/* Error Message & Graceful Simulation fallback */}
           {micError && (
-            <div className="space-y-2 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-              <div className="flex items-start gap-1.5 text-[11px] text-amber-800">
+            <div className="space-y-2 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+              <div className="flex items-start gap-1.5 text-[11px] text-amber-900">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <span>{micError}</span>
               </div>
-              <div className="flex items-center justify-between pt-1 border-t border-amber-200/60">
-                <span className="text-[10px] text-amber-700">Preview speech transcription workflow:</span>
+              <div className="flex items-center justify-between pt-1 border-t border-amber-200">
+                <span className="text-[10px] text-amber-800 font-medium">Preview speech transcription workflow:</span>
                 <button
                   id="simulate-dictation-btn"
                   type="button"
                   onClick={triggerSimulatedDictation}
                   disabled={isTranscribing}
-                  className="flex items-center gap-1 bg-amber-700 hover:bg-amber-800 text-white text-[11px] font-semibold px-2.5 py-1 rounded cursor-pointer transition-colors"
+                  className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg cursor-pointer transition-colors shadow-2xs"
                 >
                   <Sparkles className="w-3 h-3" />
                   <span>Simulate Dictation</span>
@@ -428,7 +361,7 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] font-semibold text-neutral-700">
+              <label className="text-[11px] font-semibold text-[#0F172A]">
                 Note Content (Editable)
               </label>
               <div className="flex items-center gap-2">
@@ -437,16 +370,16 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
                   type="button"
                   onClick={triggerSimulatedDictation}
                   disabled={isRecording || isTranscribing}
-                  className="text-[10px] text-[#0D6E44] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-[10px] text-[#8C6B24] hover:underline flex items-center gap-1 cursor-pointer font-semibold"
                 >
-                  <Sparkles className="w-3 h-3" />
+                  <Sparkles className="w-3 h-3 text-[#B8934A]" />
                   <span>Insert Quick Sample Note</span>
                 </button>
                 {note && (
                   <button
                     type="button"
                     onClick={() => setNote('')}
-                    className="text-[10px] text-neutral-400 hover:text-neutral-600 cursor-pointer"
+                    className="text-[10px] text-[#64748B] hover:text-[#0F172A] cursor-pointer"
                   >
                     Clear text
                   </button>
@@ -459,13 +392,13 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
               onChange={(e) => setNote(e.target.value)}
               placeholder="Speak via the microphone recorder above or type notes regarding unit specifications, budget, and objections..."
               rows={4}
-              className="w-full bg-neutral-50 border border-neutral-200 focus:border-[#0D6E44] focus:ring-1 focus:ring-[#0D6E44] rounded-xl p-3 text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] focus:border-[#B8934A] focus:ring-1 focus:ring-[#B8934A] rounded-xl p-3 text-xs text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none"
               autoFocus
             />
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <span className="text-[10px] text-neutral-400">
+            <span className="text-[10px] text-[#64748B]">
               {note.length} characters • Stored locally & queued for CRM sync
             </span>
             <div className="flex items-center gap-2">
@@ -473,7 +406,7 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
                 id="cancel-add-note-btn"
                 type="button"
                 onClick={onClose}
-                className="px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 cursor-pointer"
+                className="px-3.5 py-2 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] cursor-pointer"
               >
                 Cancel
               </button>
@@ -481,7 +414,7 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({ lead, onSave, onClos
                 id="submit-add-note-btn"
                 type="submit"
                 disabled={!note.trim()}
-                className="px-4 py-2 bg-[#0D6E44] hover:bg-[#0A5735] disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-2xs"
+                className="px-4 py-2 bg-[#B8934A] hover:bg-[#A68035] disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
               >
                 Save Note
               </button>
@@ -515,14 +448,14 @@ export const ScheduleFollowUpModal: React.FC<ScheduleFollowUpModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl border border-neutral-200 shadow-2xl p-5 space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
+      <div className="bg-white text-[#0F172A] w-full max-w-md rounded-2xl border border-[#E5E7EB] shadow-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900">Set Follow-up Call</h3>
-            <p className="text-xs text-neutral-500">{lead.customerName} • {lead.project}</p>
+            <h3 className="text-sm font-bold text-[#0F172A]">Set Follow-up Call</h3>
+            <p className="text-xs text-[#64748B]">{lead.customerName} • {lead.project}</p>
           </div>
-          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-700 p-1">
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A] p-1 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -530,28 +463,28 @@ export const ScheduleFollowUpModal: React.FC<ScheduleFollowUpModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-3 text-xs">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[11px] font-semibold text-neutral-700 block mb-1">Date</label>
+              <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">Date</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2 text-xs text-neutral-800"
+                className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-neutral-700 block mb-1">Time</label>
+              <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">Time</label>
               <input
                 type="text"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 placeholder="11:00 AM"
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2 text-xs text-neutral-800"
+                className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-neutral-700 block mb-1">
+            <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">
               Follow-up Objective
             </label>
             <input
@@ -559,21 +492,21 @@ export const ScheduleFollowUpModal: React.FC<ScheduleFollowUpModalProps> = ({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g., Provide price quote and bank loan scheme options"
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2 text-xs text-neutral-800"
+              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 border-t border-[#F1F5F9]">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900"
+              className="px-3.5 py-2 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#0D6E44] hover:bg-[#0A5735] text-white text-xs font-bold rounded-xl transition-all"
+              className="px-4 py-2 bg-[#B8934A] hover:bg-[#A68035] text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
             >
               Schedule Follow-up
             </button>
@@ -605,48 +538,48 @@ export const ScheduleSiteVisitModal: React.FC<ScheduleSiteVisitModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl border border-neutral-200 shadow-2xl p-5 space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
+      <div className="bg-white text-[#0F172A] w-full max-w-md rounded-2xl border border-[#E5E7EB] shadow-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9]">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900">Schedule Physical Site Visit</h3>
-            <p className="text-xs text-neutral-500">{lead.customerName} • {lead.project}</p>
+            <h3 className="text-sm font-bold text-[#0F172A]">Schedule Physical Site Visit</h3>
+            <p className="text-xs text-[#64748B]">{lead.customerName} • {lead.project}</p>
           </div>
-          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-700 p-1">
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A] p-1 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-          <div className="p-2.5 bg-purple-50 rounded-xl border border-purple-200 flex items-center gap-2 text-purple-900">
-            <MapPin className="w-4 h-4 text-purple-700 shrink-0" />
+          <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E8DFCF] flex items-center gap-2.5 text-[#8C6B24]">
+            <MapPin className="w-4 h-4 text-[#B8934A] shrink-0" />
             <span className="font-semibold text-xs">{lead.project} Location Site</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[11px] font-semibold text-neutral-700 block mb-1">Visit Date</label>
+              <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">Visit Date</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2 text-xs text-neutral-800"
+                className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-neutral-700 block mb-1">Visit Time</label>
+              <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">Visit Time</label>
               <input
                 type="text"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 placeholder="03:30 PM"
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2 text-xs text-neutral-800"
+                className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-neutral-700 block mb-1">
+            <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">
               Escort & Site Requirements
             </label>
             <textarea
@@ -654,21 +587,21 @@ export const ScheduleSiteVisitModal: React.FC<ScheduleSiteVisitModalProps> = ({
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="e.g., Arrange hardhats, site engineer escort, mock duplex viewing..."
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2 text-xs text-neutral-800"
+              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 border-t border-[#F1F5F9]">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900"
+              className="px-3.5 py-2 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl transition-all"
+              className="px-4 py-2 bg-[#B8934A] hover:bg-[#A68035] text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
             >
               Confirm Site Visit
             </button>
@@ -712,30 +645,30 @@ export const AddNewLeadModal: React.FC<AddNewLeadModalProps> = ({ onSave, onClos
   return (
     <div
       id="add-new-lead-modal"
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4"
     >
-      <div className="bg-white w-full max-w-md rounded-2xl border border-neutral-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="bg-[#0D6E44] text-white px-5 py-3.5 flex items-center justify-between">
+      <div className="bg-white text-[#0F172A] w-full max-w-md rounded-2xl border border-[#E5E7EB] shadow-2xl overflow-hidden">
+        <div className="bg-[#FAF9F6] text-[#0F172A] px-5 py-3.5 flex items-center justify-between border-b border-[#E8DFCF]">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-300" />
-            <h3 className="font-bold text-sm">New Ingested Lead (POST /ingest/lead)</h3>
+            <Sparkles className="w-4 h-4 text-[#B8934A]" />
+            <h3 className="font-bold text-sm text-[#0F172A]">New Ingested Lead (POST /ingest/lead)</h3>
           </div>
-          <button onClick={onClose} className="text-white/80 hover:text-white p-1">
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A] p-1 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs">
           {error && (
-            <div className="p-2.5 bg-red-50 text-red-700 rounded-lg border border-red-200 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="p-2.5 bg-rose-50 text-rose-800 rounded-xl border border-rose-200 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <div>
-            <label className="text-[11px] font-semibold text-neutral-700 block mb-1">
-              Client Full Name <span className="text-red-500">*</span>
+            <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">
+              Client Full Name <span className="text-[#B8934A]">*</span>
             </label>
             <input
               type="text"
@@ -746,13 +679,13 @@ export const AddNewLeadModal: React.FC<AddNewLeadModalProps> = ({ onSave, onClos
                 setError(null);
               }}
               placeholder="e.g. Engr. Tanvir Morshed"
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2.5 text-xs text-neutral-900 focus:border-[#0D6E44] focus:outline-none"
+              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#B8934A] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-neutral-700 block mb-1">
-              Contact Phone Number <span className="text-red-500">*</span>
+            <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">
+              Contact Phone Number <span className="text-[#B8934A]">*</span>
             </label>
             <input
               type="text"
@@ -763,12 +696,12 @@ export const AddNewLeadModal: React.FC<AddNewLeadModalProps> = ({ onSave, onClos
                 setError(null);
               }}
               placeholder="+88017XXXXXXXX"
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2.5 text-xs text-neutral-900 focus:border-[#0D6E44] focus:outline-none font-mono"
+              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#B8934A] focus:outline-none font-mono"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-neutral-700 block mb-1">
+            <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">
               Project / Venture Interest
             </label>
             <input
@@ -776,12 +709,12 @@ export const AddNewLeadModal: React.FC<AddNewLeadModalProps> = ({ onSave, onClos
               value={company}
               onChange={(e) => setCompany(e.target.value)}
               placeholder="e.g. Winstone Gulshan Heights"
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2.5 text-xs text-neutral-900 focus:border-[#0D6E44] focus:outline-none"
+              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#B8934A] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-neutral-700 block mb-1">
+            <label className="text-[11px] font-semibold text-[#0F172A] block mb-1">
               Initial Intake Notes
             </label>
             <textarea
@@ -789,26 +722,26 @@ export const AddNewLeadModal: React.FC<AddNewLeadModalProps> = ({ onSave, onClos
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="e.g. Walk-in or phone inquiry. Looking for 3,500 sqft penthouse in Banani..."
-              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-2.5 text-xs text-neutral-900 focus:border-[#0D6E44] focus:outline-none"
+              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2.5 text-xs text-[#0F172A] focus:border-[#B8934A] focus:outline-none"
             />
           </div>
 
-          <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl text-[11px] text-emerald-800 flex items-center justify-between">
+          <div className="bg-[#FAF6EE] border border-[#E8DFCF] p-2.5 rounded-xl text-[11px] text-[#8C6B24] flex items-center justify-between">
             <span>Direct Agent App Ingest • Auto-assigned</span>
             <span className="font-mono font-bold text-[10px]">source: "agent_app"</span>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100">
+          <div className="flex justify-end gap-2 pt-2 border-t border-[#F1F5F9]">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900"
+              className="px-3.5 py-2 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#0D6E44] hover:bg-[#0A5736] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+              className="px-4 py-2 bg-[#B8934A] hover:bg-[#A68035] text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
             >
               Ingest & Assign Lead
             </button>
@@ -818,4 +751,3 @@ export const AddNewLeadModal: React.FC<AddNewLeadModalProps> = ({ onSave, onClos
     </div>
   );
 };
-

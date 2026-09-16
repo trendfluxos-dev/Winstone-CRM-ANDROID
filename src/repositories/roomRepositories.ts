@@ -384,24 +384,41 @@ export class LocalRoomPerformanceRepository implements IPerformanceRepository {
     const followUps = winstoneRoomDb.getAllFollowUps();
 
     const interestedCount = leads.filter(
-      (l) => l.temperature === 'Hot' || l.operationalCategory === 'A'
+      (l) => l.temperature === 'Hot' || l.operationalCategory === 'A' || l.status === 'Interested'
     ).length;
+    const connectedCalls = calls.filter((c) => c.status === 'connected' || (c.durationSeconds && c.durationSeconds > 0)).length;
     const completedFollowUps = followUps.filter((f) => f.status === 'completed').length;
     const talkSeconds = calls.reduce((acc, c) => acc + (c.durationSeconds || 0), 0);
-    const talkTimeMinutes = Math.round(talkSeconds / 60) || 45;
+    const talkTimeMinutes = Math.round(talkSeconds / 60);
 
     return {
       today: {
         leadsAssigned: leads.length,
-        callsMade: calls.length || 18,
-        connectedCalls: calls.length || 15,
-        interestedLeads: interestedCount || 6,
-        followUpsDone: completedFollowUps || 4,
-        siteVisits: 2,
-        talkTimeMinutes: talkTimeMinutes || 48,
+        callsMade: calls.length,
+        connectedCalls: connectedCalls,
+        interestedLeads: interestedCount,
+        followUpsDone: completedFollowUps,
+        siteVisits: leads.filter((l) => l.status === 'Site Visit').length,
+        talkTimeMinutes: talkTimeMinutes,
       },
-      sevenDays: initialPerformance.sevenDays,
-      thirtyDays: initialPerformance.thirtyDays,
+      sevenDays: {
+        leadsAssigned: leads.length,
+        callsMade: calls.length,
+        connectedCalls: connectedCalls,
+        interestedLeads: interestedCount,
+        followUpsDone: completedFollowUps,
+        siteVisits: leads.filter((l) => l.status === 'Site Visit').length,
+        talkTimeMinutes: talkTimeMinutes,
+      },
+      thirtyDays: {
+        leadsAssigned: leads.length,
+        callsMade: calls.length,
+        connectedCalls: connectedCalls,
+        interestedLeads: interestedCount,
+        followUpsDone: completedFollowUps,
+        siteVisits: leads.filter((l) => l.status === 'Site Visit').length,
+        talkTimeMinutes: talkTimeMinutes,
+      },
     };
   }
 }

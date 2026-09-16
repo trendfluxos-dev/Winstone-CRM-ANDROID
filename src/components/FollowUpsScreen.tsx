@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  CalendarClock,
   CheckCircle,
   Clock,
   AlertTriangle,
@@ -12,8 +11,6 @@ import {
   CheckCheck,
   CheckSquare,
   Square,
-  ListChecks,
-  X,
 } from 'lucide-react';
 import { FollowUp, Lead } from '../types';
 
@@ -73,7 +70,6 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
   const handleTabChange = (tab: FollowUpTab) => {
     setActiveTab(tab);
     setReschedulingId(null);
-    // Filter selection to items that are valid in the newly chosen tab
     setSelectedIds([]);
   };
 
@@ -85,11 +81,9 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
 
   const handleToggleSelectAll = () => {
     if (allActionableSelected) {
-      // Deselect all in current tab
       const currentSet = new Set(actionableIds);
       setSelectedIds((prev) => prev.filter((id) => !currentSet.has(id)));
     } else {
-      // Select all in current tab
       setSelectedIds((prev) => Array.from(new Set([...prev, ...actionableIds])));
     }
   };
@@ -110,35 +104,35 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
   };
 
   return (
-    <div id="followups-screen" className="flex-1 flex flex-col bg-neutral-50 overflow-hidden relative">
+    <div id="followups-screen" className="flex-1 flex flex-col bg-[#F8F9FA] text-[#0F172A] overflow-hidden relative">
       {/* Sub-Tabs Header */}
-      <div className="bg-white p-3 border-b border-neutral-200 shadow-2xs shrink-0 space-y-2">
-        <div className="grid grid-cols-4 gap-1 p-1 bg-neutral-100 rounded-xl">
+      <div className="bg-white p-3 border-b border-[#E5E7EB] shadow-2xs shrink-0 space-y-2">
+        <div className="grid grid-cols-4 gap-1 p-1 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
           <button
             onClick={() => handleTabChange('today')}
-            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'today'
-                ? 'bg-white text-[#0D6E44] shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                ? 'bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] shadow-2xs'
+                : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             <span>Today</span>
-            <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1 rounded-full">
+            <span className="text-[10px] bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] px-1 rounded-full">
               {todayList.length}
             </span>
           </button>
 
           <button
             onClick={() => handleTabChange('overdue')}
-            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'overdue'
-                ? 'bg-white text-red-600 shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                ? 'bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs'
+                : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             <span>Overdue</span>
             {overdueList.length > 0 && (
-              <span className="text-[10px] bg-red-100 text-red-700 px-1 rounded-full">
+              <span className="text-[10px] bg-rose-100 text-rose-800 px-1 rounded-full font-bold">
                 {overdueList.length}
               </span>
             )}
@@ -146,28 +140,28 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
 
           <button
             onClick={() => handleTabChange('upcoming')}
-            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'upcoming'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                ? 'bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] shadow-2xs'
+                : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             <span>Upcoming</span>
-            <span className="text-[10px] bg-blue-100 text-blue-800 px-1 rounded-full">
+            <span className="text-[10px] bg-[#F1F5F9] text-[#475569] px-1 rounded-full">
               {upcomingList.length}
             </span>
           </button>
 
           <button
             onClick={() => handleTabChange('completed')}
-            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'completed'
-                ? 'bg-white text-neutral-800 shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs'
+                : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             <span>Done</span>
-            <span className="text-[10px] bg-neutral-200 text-neutral-700 px-1 rounded-full">
+            <span className="text-[10px] bg-[#F1F5F9] text-[#475569] px-1 rounded-full">
               {completedList.length}
             </span>
           </button>
@@ -180,16 +174,16 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
             <button
               id="followup-select-all-btn"
               onClick={handleToggleSelectAll}
-              className="flex items-center gap-1.5 text-neutral-700 hover:text-neutral-900 font-medium py-1 px-1.5 rounded-md hover:bg-neutral-100 transition-colors"
+              className="flex items-center gap-1.5 text-[#8C6B24] hover:text-[#0F172A] font-medium py-1 px-1.5 rounded-lg hover:bg-[#F8FAFC] transition-colors cursor-pointer"
             >
               {allActionableSelected ? (
-                <CheckSquare className="w-4 h-4 text-[#0D6E44]" />
+                <CheckSquare className="w-4 h-4 text-[#B8934A]" />
               ) : selectedInCurrentTab.length > 0 ? (
-                <div className="w-4 h-4 rounded border-2 border-[#0D6E44] bg-[#0D6E44]/10 flex items-center justify-center">
-                  <div className="w-2 h-0.5 bg-[#0D6E44] rounded" />
+                <div className="w-4 h-4 rounded border-2 border-[#B8934A] bg-[#FAF6EE] flex items-center justify-center">
+                  <div className="w-2 h-0.5 bg-[#B8934A] rounded" />
                 </div>
               ) : (
-                <Square className="w-4 h-4 text-neutral-400" />
+                <Square className="w-4 h-4 text-[#94A3B8]" />
               )}
               <span className="text-[11px]">
                 {allActionableSelected
@@ -204,21 +198,21 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
                 <>
                   <button
                     onClick={() => setSelectedIds([])}
-                    className="text-[11px] text-neutral-500 hover:text-neutral-800 px-1.5 py-0.5 rounded"
+                    className="text-[11px] text-[#64748B] hover:text-[#0F172A] px-1.5 py-0.5 rounded cursor-pointer"
                   >
                     Clear
                   </button>
                   <button
                     id="batch-complete-btn"
                     onClick={handleBatchComplete}
-                    className="flex items-center gap-1.5 bg-[#0D6E44] hover:bg-[#0A5735] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-xs transition-all active:scale-95"
+                    className="flex items-center gap-1.5 bg-[#B8934A] hover:bg-[#A68035] text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     <span>Complete Selected ({selectedInCurrentTab.length})</span>
                   </button>
                 </>
               ) : (
-                <span className="text-[11px] text-neutral-400 font-medium">
+                <span className="text-[11px] text-[#64748B] font-medium">
                   Select to batch complete
                 </span>
               )}
@@ -228,14 +222,14 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
       </div>
 
       {/* Follow-up List */}
-      <div className="flex-1 overflow-y-auto p-3.5 space-y-3 pb-24">
+      <div className="flex-1 overflow-y-auto p-3.5 space-y-3 pb-24 custom-scrollbar">
         {currentList.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 border border-neutral-200 text-center space-y-2 mt-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center">
-              <CheckCircle className="w-6 h-6" />
+          <div className="bg-white rounded-2xl p-8 border border-[#E5E7EB] text-center space-y-2 mt-4 shadow-xs">
+            <div className="w-12 h-12 rounded-xl bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] mx-auto flex items-center justify-center shadow-2xs">
+              <CheckCircle className="w-6 h-6 text-[#B8934A]" />
             </div>
-            <h4 className="text-sm font-bold text-neutral-800">No {activeTab} follow-ups</h4>
-            <p className="text-xs text-neutral-500 max-w-xs mx-auto">
+            <h4 className="text-sm font-bold text-[#0F172A]">No {activeTab} follow-ups</h4>
+            <p className="text-xs text-[#64748B] max-w-xs mx-auto">
               {activeTab === 'today'
                 ? 'Great job! All scheduled calls for today have been completed.'
                 : `You currently have no tasks in the ${activeTab} queue.`}
@@ -252,10 +246,10 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
               <div
                 key={item.id}
                 id={`followup-card-${item.id}`}
-                className={`bg-white rounded-xl p-4 border transition-all space-y-3 ${
+                className={`bg-white rounded-2xl p-4 border transition-all space-y-3 ${
                   isSelected
-                    ? 'border-[#0D6E44] ring-2 ring-[#0D6E44]/25 bg-emerald-50/20 shadow-xs'
-                    : 'border-neutral-200/90 shadow-2xs hover:border-[#0D6E44]/40'
+                    ? 'border-[#B8934A] ring-2 ring-[#B8934A]/20 bg-[#FAFBFD] shadow-md'
+                    : 'border-[#E5E7EB] shadow-xs hover:border-[#CBD5E1]'
                 }`}
               >
                 {/* Header */}
@@ -269,15 +263,15 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
                           e.stopPropagation();
                           toggleSelect(item.id);
                         }}
-                        className="mt-0.5 shrink-0 focus:outline-none"
+                        className="mt-0.5 shrink-0 focus:outline-none cursor-pointer"
                         title={isSelected ? 'Deselect task' : 'Select for batch complete'}
                       >
                         {isSelected ? (
-                          <div className="w-5 h-5 rounded-md bg-[#0D6E44] text-white flex items-center justify-center shadow-2xs transition-transform active:scale-90">
+                          <div className="w-5 h-5 rounded-md bg-[#B8934A] text-white flex items-center justify-center shadow-xs transition-transform active:scale-90 font-bold">
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-md border-2 border-neutral-300 hover:border-[#0D6E44] bg-white transition-colors" />
+                          <div className="w-5 h-5 rounded-md border-2 border-[#CBD5E1] hover:border-[#B8934A] bg-white transition-colors" />
                         )}
                       </button>
                     ) : (
@@ -288,14 +282,14 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-neutral-900 truncate">
+                        <h4 className="text-sm font-bold text-[#0F172A] truncate">
                           {item.customerName}
                         </h4>
-                        <span className="text-[10px] font-mono text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-mono text-[#64748B] bg-[#F8FAFC] px-1.5 py-0.5 rounded border border-[#E2E8F0]">
                           {item.phone}
                         </span>
                       </div>
-                      <p className="text-xs text-[#0D6E44] font-semibold mt-0.5 truncate">
+                      <p className="text-xs text-[#8C6B24] font-semibold mt-0.5 truncate">
                         {item.project}
                       </p>
                     </div>
@@ -305,7 +299,7 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
                   {matchedLead && !isDone && (
                     <button
                       onClick={() => onStartCall(matchedLead)}
-                      className="flex items-center gap-1 bg-[#0D6E44] hover:bg-[#0A5735] text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shadow-xs transition-all shrink-0"
+                      className="flex items-center gap-1 bg-[#B8934A] hover:bg-[#A68035] text-white px-2.5 py-1.5 rounded-xl text-xs font-bold shadow-2xs transition-all shrink-0 cursor-pointer active:scale-95"
                     >
                       <PhoneCall className="w-3.5 h-3.5" />
                       <span>Call</span>
@@ -315,66 +309,66 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
 
                 {/* Date, Time & Priority */}
                 <div className="flex items-center gap-2 text-xs flex-wrap pl-7">
-                  <span className="flex items-center gap-1 font-semibold text-neutral-700 bg-neutral-100 px-2 py-0.5 rounded">
-                    <Calendar className="w-3.5 h-3.5 text-neutral-500" />
+                  <span className="flex items-center gap-1 font-semibold text-[#475569] bg-[#F8FAFC] px-2 py-0.5 rounded-lg border border-[#E2E8F0]">
+                    <Calendar className="w-3.5 h-3.5 text-[#94A3B8]" />
                     {item.date}
                   </span>
-                  <span className="flex items-center gap-1 font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="flex items-center gap-1 font-semibold text-[#8C6B24] bg-[#FAF6EE] px-2 py-0.5 rounded-lg border border-[#E8DFCF]">
+                    <Clock className="w-3.5 h-3.5 text-[#B8934A]" />
                     {item.time}
                   </span>
                   {item.status === 'overdue' && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
-                      <AlertTriangle className="w-3 h-3" /> Overdue
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-lg border border-rose-200">
+                      <AlertTriangle className="w-3 h-3 text-rose-600" /> Overdue
                     </span>
                   )}
                   {isDone && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                      <Check className="w-3 h-3" /> Done
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-lg border border-emerald-200">
+                      <Check className="w-3 h-3 text-emerald-600" /> Done
                     </span>
                   )}
                 </div>
 
                 {/* Reason */}
-                <div className="text-xs text-neutral-700 bg-neutral-50 p-2.5 rounded-lg border border-neutral-100 ml-7">
-                  <span className="font-semibold text-neutral-900 block mb-0.5">Objective:</span>
+                <div className="text-xs text-[#334155] bg-[#F8FAFC] p-3 rounded-xl border border-[#E2E8F0] ml-7">
+                  <span className="font-semibold text-[#0F172A] block mb-0.5">Objective:</span>
                   <p>{item.reason}</p>
                 </div>
 
                 {/* Inline Reschedule Form if toggled */}
                 {isRescheduling && (
-                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2 text-xs animate-in fade-in duration-150 ml-7">
-                    <span className="font-bold text-amber-900 block">Reschedule Follow-up</span>
+                  <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E8DFCF] space-y-2.5 text-xs animate-in fade-in duration-150 ml-7">
+                    <span className="font-bold text-[#8C6B24] block">Reschedule Follow-up</span>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[10px] text-amber-800 block">New Date</label>
+                        <label className="text-[10px] text-[#64748B] block mb-1 font-medium">New Date</label>
                         <input
                           type="date"
                           value={newRescheduleDate}
                           onChange={(e) => setNewRescheduleDate(e.target.value)}
-                          className="w-full bg-white border border-amber-300 rounded p-1.5 text-xs text-neutral-900"
+                          className="w-full bg-white border border-[#CBD5E1] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-amber-800 block">New Time</label>
+                        <label className="text-[10px] text-[#64748B] block mb-1 font-medium">New Time</label>
                         <input
                           type="text"
                           value={newRescheduleTime}
                           onChange={(e) => setNewRescheduleTime(e.target.value)}
-                          className="w-full bg-white border border-amber-300 rounded p-1.5 text-xs text-neutral-900"
+                          className="w-full bg-white border border-[#CBD5E1] rounded-lg p-2 text-xs text-[#0F172A] focus:outline-none focus:border-[#B8934A]"
                         />
                       </div>
                     </div>
                     <div className="flex justify-end gap-2 pt-1">
                       <button
                         onClick={() => setReschedulingId(null)}
-                        className="px-2.5 py-1 text-[11px] text-neutral-600 hover:text-neutral-900"
+                        className="px-3 py-1.5 text-[11px] text-[#64748B] hover:text-[#0F172A] cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={() => handleSaveReschedule(item.id)}
-                        className="px-3 py-1 bg-amber-700 text-white rounded text-[11px] font-bold"
+                        className="px-3.5 py-1.5 bg-[#B8934A] hover:bg-[#A68035] text-white rounded-lg text-[11px] font-bold cursor-pointer shadow-xs"
                       >
                         Confirm Reschedule
                       </button>
@@ -383,14 +377,14 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
                 )}
 
                 {/* Action Row */}
-                <div className="pt-2 border-t border-neutral-100 flex items-center justify-between text-xs ml-7">
+                <div className="pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-xs ml-7">
                   {matchedLead ? (
                     <button
                       onClick={() => onOpenLead(matchedLead)}
-                      className="text-[#0D6E44] font-semibold hover:underline flex items-center gap-1 text-[11px]"
+                      className="text-[#8C6B24] font-semibold hover:underline flex items-center gap-1 text-[11px] cursor-pointer"
                     >
                       <span>Open Lead Record</span>
-                      <ChevronRight className="w-3 h-3" />
+                      <ChevronRight className="w-3 h-3 text-[#B8934A]" />
                     </button>
                   ) : (
                     <span />
@@ -400,15 +394,15 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setReschedulingId(isRescheduling ? null : item.id)}
-                        className="text-neutral-600 hover:text-neutral-900 text-[11px] font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-neutral-100 transition-colors"
+                        className="text-[#64748B] hover:text-[#0F172A] text-[11px] font-medium flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-[#F8FAFC] transition-colors cursor-pointer"
                       >
-                        <RotateCcw className="w-3 h-3 text-neutral-500" />
+                        <RotateCcw className="w-3 h-3 text-[#B8934A]" />
                         <span>Reschedule</span>
                       </button>
 
                       <button
                         onClick={() => onCompleteFollowUp(item.id)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                        className="bg-[#B8934A] hover:bg-[#A68035] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
                       >
                         <Check className="w-3 h-3" />
                         <span>Mark Done</span>
@@ -424,12 +418,12 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
 
       {/* Floating Bottom Quick-Action Bar when items are selected */}
       {selectedInCurrentTab.length > 0 && (
-        <div className="absolute bottom-3 inset-x-3 z-30 bg-neutral-900 text-white p-2.5 px-3 rounded-xl shadow-xl border border-neutral-700 flex items-center justify-between animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="absolute bottom-3 inset-x-3 z-30 bg-white text-[#0F172A] p-3 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-[#E5E7EB] flex items-center justify-between animate-in fade-in slide-in-from-bottom-2 duration-150">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center border border-emerald-500/40">
+            <span className="w-6 h-6 rounded-full bg-[#FAF6EE] text-[#8C6B24] font-bold text-xs flex items-center justify-center border border-[#E8DFCF]">
               {selectedInCurrentTab.length}
             </span>
-            <span className="text-xs font-semibold">
+            <span className="text-xs font-semibold text-[#0F172A]">
               {selectedInCurrentTab.length} selected
             </span>
           </div>
@@ -437,14 +431,14 @@ export const FollowUpsScreen: React.FC<FollowUpsScreenProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSelectedIds([])}
-              className="text-neutral-400 hover:text-white text-xs px-2 py-1 font-medium"
+              className="text-[#64748B] hover:text-[#0F172A] text-xs px-2 py-1 font-medium cursor-pointer"
             >
               Cancel
             </button>
             <button
               id="floating-batch-complete-btn"
               onClick={handleBatchComplete}
-              className="flex items-center gap-1.5 bg-[#0D6E44] hover:bg-[#0A5735] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-all active:scale-95"
+              className="flex items-center gap-1.5 bg-[#B8934A] hover:bg-[#A68035] text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
             >
               <CheckCheck className="w-4 h-4" />
               <span>Complete All ({selectedInCurrentTab.length})</span>

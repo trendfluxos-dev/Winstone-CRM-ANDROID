@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, PhoneCall, Filter, ChevronRight, X, User, Sparkles, UserPlus } from 'lucide-react';
+import { Search, PhoneCall, Filter, ChevronRight, X, User, UserPlus } from 'lucide-react';
 import { Lead, LeadTemperature, OperationalCategory } from '../types';
 import { TemperatureBadge, CategoryBadge, StatusBadge } from './Badges';
 
@@ -61,25 +61,25 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
   }, [leads, searchQuery, activeFilter, categoryFilter]);
 
   return (
-    <div id="leads-screen" className="flex-1 flex flex-col bg-neutral-50 overflow-hidden">
+    <div id="leads-screen" className="flex-1 flex flex-col bg-[#F8F9FA] text-[#0F172A] overflow-hidden">
       {/* Search & Filter Header */}
-      <div className="bg-white p-3.5 border-b border-neutral-200/90 shadow-2xs space-y-2.5 shrink-0">
+      <div className="bg-white p-3.5 border-b border-[#E5E7EB] shadow-2xs space-y-2.5 shrink-0">
         {/* Search Bar & Ingest Lead Action */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               id="leads-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search leads by name, phone, project..."
-              className="w-full bg-neutral-100 hover:bg-neutral-100/80 focus:bg-white text-xs pl-9 pr-8 py-2 rounded-lg border border-neutral-200 focus:border-[#0D6E44] focus:ring-1 focus:ring-[#0D6E44] focus:outline-none transition-all placeholder:text-neutral-400"
+              className="w-full bg-[#F8FAFC] hover:bg-white focus:bg-white text-xs text-[#0F172A] pl-9 pr-8 py-2 rounded-xl border border-[#E2E8F0] focus:border-[#B8934A] focus:ring-1 focus:ring-[#B8934A] focus:outline-none transition-all placeholder:text-[#94A3B8]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 p-0.5"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#0F172A] p-0.5"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -89,7 +89,7 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
             <button
               id="add-lead-btn"
               onClick={onOpenAddNewLead}
-              className="bg-[#0D6E44] hover:bg-[#0A5736] text-white px-2.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 transition-colors shadow-2xs"
+              className="bg-[#B8934A] hover:bg-[#A68035] text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-colors shadow-xs cursor-pointer active:scale-95"
               title="Add & Ingest New Lead to CRM"
             >
               <UserPlus className="w-3.5 h-3.5" />
@@ -107,10 +107,10 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
                 key={tab}
                 id={`filter-${tab.toLowerCase().replace(/\s+/g, '-')}`}
                 onClick={() => setActiveFilter(tab)}
-                className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap transition-all ${
+                className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#0D6E44] text-white shadow-xs'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                    ? 'bg-[#B8934A] text-white shadow-2xs'
+                    : 'bg-[#F1F5F9] text-[#475569] border border-transparent hover:border-[#CBD5E1] hover:text-[#0F172A]'
                 }`}
               >
                 {tab}
@@ -120,9 +120,9 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
         </div>
 
         {/* Operational Category Filter Row (A, B, C, D) */}
-        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-100">
-          <span className="text-neutral-500 font-medium flex items-center gap-1">
-            <Filter className="w-3 h-3 text-neutral-400" />
+        <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-[#F1F5F9]">
+          <span className="text-[#64748B] font-medium flex items-center gap-1">
+            <Filter className="w-3 h-3 text-[#B8934A]" />
             Category:
           </span>
           <div className="flex items-center gap-1">
@@ -132,10 +132,10 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
                 <button
                   key={cat}
                   onClick={() => setCategoryFilter(cat)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+                  className={`px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-neutral-900 text-white'
-                      : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                      ? 'bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF]'
+                      : 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0] hover:text-[#0F172A]'
                   }`}
                 >
                   {cat === 'All' ? 'All' : `Cat ${cat}`}
@@ -147,9 +147,9 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
       </div>
 
       {/* Leads List Section */}
-      <div className="flex-1 overflow-y-auto p-3.5 space-y-3 pb-24">
-        <div className="flex items-center justify-between text-xs text-neutral-500 px-0.5">
-          <span>Showing <strong>{filteredLeads.length}</strong> of {leads.length} leads</span>
+      <div className="flex-1 overflow-y-auto p-3.5 space-y-3 pb-24 custom-scrollbar">
+        <div className="flex items-center justify-between text-xs text-[#64748B] px-0.5">
+          <span>Showing <strong className="text-[#0F172A]">{filteredLeads.length}</strong> of {leads.length} leads</span>
           {(activeFilter !== 'All' || categoryFilter !== 'All' || searchQuery) && (
             <button
               onClick={() => {
@@ -157,7 +157,7 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
                 setCategoryFilter('All');
                 setSearchQuery('');
               }}
-              className="text-[#0D6E44] font-semibold hover:underline text-[11px]"
+              className="text-[#8C6B24] font-semibold hover:underline text-[11px] cursor-pointer"
             >
               Reset Filters
             </button>
@@ -165,12 +165,12 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
         </div>
 
         {filteredLeads.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 border border-neutral-200 text-center space-y-2 mt-4">
-            <div className="w-12 h-12 rounded-full bg-neutral-100 text-neutral-400 mx-auto flex items-center justify-center">
-              <User className="w-6 h-6" />
+          <div className="bg-white rounded-2xl p-8 border border-[#E5E7EB] text-center space-y-2 mt-4 shadow-xs">
+            <div className="w-12 h-12 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#64748B] mx-auto flex items-center justify-center">
+              <User className="w-6 h-6 text-[#94A3B8]" />
             </div>
-            <h4 className="text-sm font-bold text-neutral-800">No matching leads found</h4>
-            <p className="text-xs text-neutral-500 max-w-xs mx-auto">
+            <h4 className="text-sm font-bold text-[#0F172A]">No matching leads found</h4>
+            <p className="text-xs text-[#64748B] max-w-xs mx-auto">
               Try modifying your search keywords or clearing active filters to see all assigned prospects.
             </p>
           </div>
@@ -180,18 +180,18 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
               key={lead.id}
               id={`lead-card-${lead.id}`}
               onClick={() => onSelectLead(lead)}
-              className="bg-white rounded-xl p-3.5 border border-neutral-200/90 shadow-2xs hover:border-[#0D6E44]/50 hover:shadow-xs transition-all cursor-pointer group"
+              className="bg-white rounded-xl p-3.5 border border-[#E5E7EB] shadow-xs hover:border-[#B8934A] hover:shadow-md transition-all cursor-pointer group"
             >
               {/* Card Header: Customer name, phone & Status */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-neutral-900 group-hover:text-[#0D6E44] transition-colors truncate">
+                    <h4 className="text-sm font-bold text-[#0F172A] group-hover:text-[#8C6B24] transition-colors truncate">
                       {lead.customerName}
                     </h4>
                     <StatusBadge status={lead.status} size="sm" />
                   </div>
-                  <div className="text-xs text-neutral-500 font-mono mt-0.5">
+                  <div className="text-xs text-[#64748B] font-mono mt-0.5">
                     {lead.phone}
                   </div>
                 </div>
@@ -203,7 +203,7 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
                     e.stopPropagation();
                     onStartCall(lead);
                   }}
-                  className="flex items-center gap-1 bg-[#0D6E44] hover:bg-[#0A5735] active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-xs transition-all shrink-0"
+                  className="flex items-center gap-1 bg-[#B8934A] hover:bg-[#A68035] active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-2xs transition-all shrink-0 cursor-pointer"
                   title="Call Lead"
                 >
                   <PhoneCall className="w-3.5 h-3.5" />
@@ -213,10 +213,10 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
 
               {/* Project & Source */}
               <div className="mt-2 text-xs">
-                <span className="font-semibold text-neutral-800 block truncate">
+                <span className="font-semibold text-[#1E293B] block truncate">
                   {lead.project}
                 </span>
-                <span className="text-[11px] text-neutral-500 block truncate mt-0.5">
+                <span className="text-[11px] text-[#64748B] block truncate mt-0.5">
                   Source: {lead.source} {lead.campaign ? `• ${lead.campaign}` : ''}
                 </span>
               </div>
@@ -225,17 +225,17 @@ export const LeadsScreen: React.FC<LeadsScreenProps> = ({
               <div className="mt-2.5 flex items-center gap-2 flex-wrap">
                 <TemperatureBadge temperature={lead.temperature} size="sm" />
                 <CategoryBadge category={lead.operationalCategory} size="sm" />
-                <span className="text-[10px] text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] px-1.5 py-0.5 rounded font-mono">
                   Agent: {lead.assignedAgent}
                 </span>
               </div>
 
               {/* Card Footer: Last contact & Next Followup */}
-              <div className="mt-3 pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-500">
-                <span>Last contact: <strong className="text-neutral-700">{lead.lastContact}</strong></span>
-                <div className="flex items-center gap-1 text-[#0D6E44] font-medium group-hover:translate-x-0.5 transition-transform">
+              <div className="mt-3 pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
+                <span>Last contact: <strong className="text-[#334155]">{lead.lastContact}</strong></span>
+                <div className="flex items-center gap-1 text-[#8C6B24] font-medium group-hover:translate-x-0.5 transition-transform">
                   <span>View Details</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[#B8934A]" />
                 </div>
               </div>
             </div>

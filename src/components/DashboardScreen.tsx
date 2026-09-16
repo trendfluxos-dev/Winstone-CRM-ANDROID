@@ -1,239 +1,219 @@
 import React from 'react';
 import {
   PhoneCall,
-  UserPlus,
   Clock,
   ThumbsUp,
   MapPin,
-  Calendar,
-  ChevronRight,
-  Sparkles,
-  ArrowUpRight,
   TrendingUp,
+  UserPlus,
+  ChevronRight,
+  ShieldCheck,
+  Building2,
+  Calendar,
+  Sparkles,
 } from 'lucide-react';
-import { Agent, Lead, FollowUp, MetricBreakdown } from '../types';
+import { Lead, TodayMetrics, FollowUpScheduleItem, AgentProfile, NavigationTab } from '../types';
 import { TemperatureBadge, CategoryBadge } from './Badges';
 import { CoachInsightsCard } from './CoachInsightsCard';
 
 interface DashboardScreenProps {
-  agent: Agent;
+  todayMetrics: TodayMetrics;
   leads: Lead[];
-  followUps: FollowUp[];
-  todayMetrics: MetricBreakdown;
+  followUps: FollowUpScheduleItem[];
+  agent: AgentProfile;
   onSelectLead: (lead: Lead) => void;
   onStartCall: (lead: Lead) => void;
-  onNavigateTab: (tab: 'leads' | 'followups' | 'performance') => void;
+  onNavigateTab: (tab: NavigationTab) => void;
+  onOpenAddNewLead?: () => void;
 }
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({
-  agent,
+  todayMetrics,
   leads,
   followUps,
-  todayMetrics,
+  agent,
   onSelectLead,
   onStartCall,
   onNavigateTab,
+  onOpenAddNewLead,
 }) => {
-  // Current formatted date
-  const todayFormatted = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-
-  // Derived counts
   const newLeads = leads.filter((l) => l.status === 'New');
   const hotLeads = leads.filter((l) => l.temperature === 'Hot');
-  const todayDateStr = new Date().toISOString().split('T')[0];
-  const todayFollowUpsList = followUps.filter(
-    (f) => (f.date === todayDateStr || f.date === '2026-09-15') && f.status === 'pending'
-  );
+  const todayFollowUpsList = followUps.filter((f) => !f.isCompleted);
 
-  const getInitials = (name?: string) => {
-    if (!name) return 'TA';
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   };
 
   return (
-    <div id="dashboard-screen" className="flex-1 overflow-y-auto bg-neutral-50 p-4 space-y-5 pb-20">
-      {/* 1. Agent Greeting Header */}
-      <div className="bg-white rounded-xl p-4 border border-neutral-200/80 shadow-xs">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                Winstone Properties Ltd.
-              </span>
-              <span className="text-[11px] text-neutral-400 font-mono">{agent.employeeId}</span>
-            </div>
-            <h2 className="text-xl font-extrabold text-neutral-900 mt-1">
-              Welcome, {agent.name}
-            </h2>
-            <p className="text-xs text-neutral-500 mt-0.5 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-neutral-400" />
-              <span>{todayFormatted}</span>
-              <span className="text-neutral-300">•</span>
-              <span className="text-neutral-600 font-medium">{agent.territory}</span>
-            </p>
+    <div id="dashboard-screen" className="flex-1 overflow-y-auto p-4 space-y-4 pb-20 custom-scrollbar bg-[#F8F9FA] text-[#0F172A]">
+      {/* 1. Agent Welcome & Operational Status */}
+      <div className="bg-white rounded-2xl p-4 border border-[#E5E7EB] shadow-xs flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#8C6B24] tracking-wide uppercase">
+              {getGreeting()}, {agent.name.split(' ')[0]}
+            </span>
+            <span className="bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">
+              {agent.employeeId}
+            </span>
           </div>
-          <div className="w-11 h-11 rounded-full bg-emerald-800 text-white font-bold flex items-center justify-center text-sm shadow-xs border-2 border-white ring-2 ring-emerald-100 shrink-0">
-            {getInitials(agent.name)}
-          </div>
+          <h2 className="text-base font-bold text-[#0F172A] mt-0.5 tracking-tight">
+            Daily Operational Cockpit
+          </h2>
+          <p className="text-xs text-[#64748B] mt-0.5">
+            {todayMetrics.leadsAssigned} leads assigned today • {hotLeads.length} hot prospects in pipeline
+          </p>
         </div>
 
-        {/* Quick Shift Summary Banner */}
-        <div className="mt-3.5 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-600">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="font-medium text-neutral-800">Shift Status: Active On-Duty</span>
-          </div>
-          <span className="text-[11px] text-neutral-500">Target: 25 calls / 3 visits</span>
-        </div>
+        {onOpenAddNewLead && (
+          <button
+            onClick={onOpenAddNewLead}
+            className="bg-[#B8934A] hover:bg-[#A68035] text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all shadow-xs cursor-pointer active:scale-95"
+            title="Ingest New Real Estate Prospect"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">+ Ingest Lead</span>
+          </button>
+        )}
       </div>
 
-      {/* AI Sales Coach Diagnostic & Daily Playbook */}
+      {/* 2. AI Sales Playbook & Performance Diagnostics */}
       <CoachInsightsCard employeeId={agent.employeeId} />
 
-      {/* 2. Today's Key Metrics Overview Grid */}
+      {/* 3. KPI Metrics Grid */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-bold text-neutral-600 uppercase tracking-wider">
-            Today's KPI Pulse
+          <h3 className="text-xs font-bold text-[#475569] uppercase tracking-wider">
+            Today's Telemetry & Activity
           </h3>
-          <button
-            onClick={() => onNavigateTab('performance')}
-            className="text-xs text-[#0D6E44] font-semibold flex items-center gap-0.5 hover:underline"
-          >
-            Full Analytics <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <span className="text-[11px] text-[#64748B] font-mono">
+            {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
           {/* New Leads */}
           <div
             onClick={() => onNavigateTab('leads')}
-            className="bg-white p-3 rounded-xl border border-neutral-200/80 shadow-2xs cursor-pointer hover:border-emerald-300 transition-all"
+            className="bg-white p-3 rounded-xl border border-[#E5E7EB] shadow-xs cursor-pointer hover:border-[#B8934A] transition-all group"
           >
-            <div className="flex items-center justify-between text-neutral-400 mb-1">
-              <UserPlus className="w-4 h-4 text-emerald-600" />
-              <span className="text-[10px] text-emerald-700 bg-emerald-50 font-bold px-1 rounded">
+            <div className="flex items-center justify-between text-[#64748B] mb-1">
+              <UserPlus className="w-4 h-4 text-[#B8934A] group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] text-[#8C6B24] bg-[#FAF6EE] font-bold px-1.5 py-0.5 rounded border border-[#E8DFCF]">
                 +{newLeads.length}
               </span>
             </div>
-            <div className="text-lg font-bold text-neutral-900 leading-tight">
+            <div className="text-xl font-bold text-[#0F172A] leading-tight font-mono">
               {todayMetrics.leadsAssigned}
             </div>
-            <div className="text-[11px] text-neutral-500 font-medium mt-0.5">New Leads</div>
+            <div className="text-[11px] text-[#64748B] font-medium mt-0.5">New Leads</div>
           </div>
 
           {/* Today's Calls */}
           <div
             onClick={() => onNavigateTab('performance')}
-            className="bg-white p-3 rounded-xl border border-neutral-200/80 shadow-2xs cursor-pointer hover:border-emerald-300 transition-all"
+            className="bg-white p-3 rounded-xl border border-[#E5E7EB] shadow-xs cursor-pointer hover:border-[#B8934A] transition-all group"
           >
-            <div className="flex items-center justify-between text-neutral-400 mb-1">
-              <PhoneCall className="w-4 h-4 text-blue-600" />
-              <span className="text-[10px] text-blue-700 bg-blue-50 font-bold px-1 rounded">
+            <div className="flex items-center justify-between text-[#64748B] mb-1">
+              <PhoneCall className="w-4 h-4 text-[#8C6B24] group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] text-[#8C6B24] bg-[#FAF6EE] font-bold px-1.5 py-0.5 rounded border border-[#E8DFCF] font-mono">
                 {todayMetrics.connectedCalls} conn
               </span>
             </div>
-            <div className="text-lg font-bold text-neutral-900 leading-tight">
+            <div className="text-xl font-bold text-[#0F172A] leading-tight font-mono">
               {todayMetrics.callsMade}
             </div>
-            <div className="text-[11px] text-neutral-500 font-medium mt-0.5">Today's Calls</div>
+            <div className="text-[11px] text-[#64748B] font-medium mt-0.5">Today's Calls</div>
           </div>
 
           {/* Follow-ups Today */}
           <div
             onClick={() => onNavigateTab('followups')}
-            className="bg-white p-3 rounded-xl border border-neutral-200/80 shadow-2xs cursor-pointer hover:border-emerald-300 transition-all"
+            className="bg-white p-3 rounded-xl border border-[#E5E7EB] shadow-xs cursor-pointer hover:border-[#B8934A] transition-all group"
           >
-            <div className="flex items-center justify-between text-neutral-400 mb-1">
-              <Clock className="w-4 h-4 text-amber-600" />
-              <span className="text-[10px] text-amber-700 bg-amber-50 font-bold px-1 rounded">
+            <div className="flex items-center justify-between text-[#64748B] mb-1">
+              <Clock className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] text-amber-800 bg-amber-50 font-bold px-1.5 py-0.5 rounded border border-amber-200 font-mono">
                 {todayFollowUpsList.length} due
               </span>
             </div>
-            <div className="text-lg font-bold text-neutral-900 leading-tight">
+            <div className="text-xl font-bold text-[#0F172A] leading-tight font-mono">
               {todayFollowUpsList.length}
             </div>
-            <div className="text-[11px] text-neutral-500 font-medium mt-0.5">Follow-ups</div>
+            <div className="text-[11px] text-[#64748B] font-medium mt-0.5">Follow-ups</div>
           </div>
 
           {/* Interested Leads */}
           <div
             onClick={() => onNavigateTab('leads')}
-            className="bg-white p-3 rounded-xl border border-neutral-200/80 shadow-2xs cursor-pointer hover:border-emerald-300 transition-all"
+            className="bg-white p-3 rounded-xl border border-[#E5E7EB] shadow-xs cursor-pointer hover:border-[#B8934A] transition-all group"
           >
-            <div className="flex items-center justify-between text-neutral-400 mb-1">
-              <ThumbsUp className="w-4 h-4 text-emerald-600" />
-              <span className="text-[10px] text-emerald-700 bg-emerald-50 font-bold px-1 rounded">
+            <div className="flex items-center justify-between text-[#64748B] mb-1">
+              <ThumbsUp className="w-4 h-4 text-[#B8934A] group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] text-rose-700 bg-rose-50 font-bold px-1.5 py-0.5 rounded border border-rose-200 font-mono">
                 {hotLeads.length} hot
               </span>
             </div>
-            <div className="text-lg font-bold text-neutral-900 leading-tight">
+            <div className="text-xl font-bold text-[#0F172A] leading-tight font-mono">
               {todayMetrics.interestedLeads}
             </div>
-            <div className="text-[11px] text-neutral-500 font-medium mt-0.5">Interested</div>
+            <div className="text-[11px] text-[#64748B] font-medium mt-0.5">Interested</div>
           </div>
 
           {/* Site Visits */}
           <div
             onClick={() => onNavigateTab('performance')}
-            className="bg-white p-3 rounded-xl border border-neutral-200/80 shadow-2xs cursor-pointer hover:border-emerald-300 transition-all"
+            className="bg-white p-3 rounded-xl border border-[#E5E7EB] shadow-xs cursor-pointer hover:border-[#B8934A] transition-all group"
           >
-            <div className="flex items-center justify-between text-neutral-400 mb-1">
-              <MapPin className="w-4 h-4 text-purple-600" />
-              <span className="text-[10px] text-purple-700 bg-purple-50 font-bold px-1 rounded">
+            <div className="flex items-center justify-between text-[#64748B] mb-1">
+              <MapPin className="w-4 h-4 text-[#8C6B24] group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] text-purple-700 bg-purple-50 font-bold px-1.5 py-0.5 rounded border border-purple-200">
                 Gulshan
               </span>
             </div>
-            <div className="text-lg font-bold text-neutral-900 leading-tight">
+            <div className="text-xl font-bold text-[#0F172A] leading-tight font-mono">
               {todayMetrics.siteVisits}
             </div>
-            <div className="text-[11px] text-neutral-500 font-medium mt-0.5">Site Visits</div>
+            <div className="text-[11px] text-[#64748B] font-medium mt-0.5">Site Visits</div>
           </div>
 
           {/* Talk Time */}
           <div
             onClick={() => onNavigateTab('performance')}
-            className="bg-white p-3 rounded-xl border border-neutral-200/80 shadow-2xs cursor-pointer hover:border-emerald-300 transition-all"
+            className="bg-white p-3 rounded-xl border border-[#E5E7EB] shadow-xs cursor-pointer hover:border-[#B8934A] transition-all group"
           >
-            <div className="flex items-center justify-between text-neutral-400 mb-1">
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-              <span className="text-[10px] text-neutral-500 font-bold px-1 rounded">
+            <div className="flex items-center justify-between text-[#64748B] mb-1">
+              <TrendingUp className="w-4 h-4 text-[#B8934A] group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] text-[#8C6B24] font-mono px-1">
                 Avg 3.4m
               </span>
             </div>
-            <div className="text-lg font-bold text-neutral-900 leading-tight">
+            <div className="text-xl font-bold text-[#0F172A] leading-tight font-mono">
               {todayMetrics.talkTimeMinutes}m
             </div>
-            <div className="text-[11px] text-neutral-500 font-medium mt-0.5">Total Talk</div>
+            <div className="text-[11px] text-[#64748B] font-medium mt-0.5">Total Talk</div>
           </div>
         </div>
       </div>
 
-      {/* 3. Prominent "New Leads" Section */}
+      {/* 4. Prominent "New Leads" Section */}
       <div>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-neutral-900">New Leads Ingested</h3>
-            <span className="bg-red-500 text-white text-[10px] font-extrabold px-1.5 py-0.2 rounded-full animate-pulse">
+            <h3 className="text-sm font-bold text-[#0F172A]">New Leads Ingested</h3>
+            <span className="bg-[#B8934A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs">
               {newLeads.length} Urgent
             </span>
           </div>
           <button
             onClick={() => onNavigateTab('leads')}
-            className="text-xs text-[#0D6E44] font-semibold flex items-center hover:underline"
+            className="text-xs text-[#8C6B24] font-semibold flex items-center hover:underline cursor-pointer"
           >
-            View All ({leads.length}) <ChevronRight className="w-3.5 h-3.5" />
+            View All ({leads.length}) <ChevronRight className="w-3.5 h-3.5 text-[#B8934A]" />
           </button>
         </div>
 
@@ -242,7 +222,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <div
               key={lead.id}
               id={`dashboard-lead-${lead.id}`}
-              className="bg-white rounded-xl p-3.5 border border-emerald-200/90 shadow-xs hover:shadow-sm transition-all"
+              className="bg-white rounded-xl p-3.5 border border-[#E5E7EB] shadow-xs hover:border-[#B8934A] transition-all"
             >
               <div className="flex items-start justify-between gap-2">
                 <div
@@ -250,28 +230,28 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   onClick={() => onSelectLead(lead)}
                 >
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-sm font-bold text-neutral-900 hover:text-[#0D6E44] transition-colors truncate">
+                    <h4 className="text-sm font-bold text-[#0F172A] hover:text-[#8C6B24] transition-colors truncate">
                       {lead.customerName}
                     </h4>
-                    <span className="text-[10px] font-mono text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] px-1.5 py-0.5 rounded">
                       {lead.phone}
                     </span>
                   </div>
 
-                  <p className="text-xs text-[#0D6E44] font-semibold mt-1 truncate">
+                  <p className="text-xs text-[#8C6B24] font-semibold mt-1 truncate">
                     {lead.project}
                   </p>
 
                   <div className="flex items-center gap-2 mt-2">
                     <TemperatureBadge temperature={lead.temperature} size="sm" />
                     <CategoryBadge category={lead.operationalCategory} size="sm" />
-                    <span className="text-[11px] text-neutral-500">
-                      Source: <strong className="text-neutral-700">{lead.source}</strong>
+                    <span className="text-[11px] text-[#64748B]">
+                      Source: <strong className="text-[#334155]">{lead.source}</strong>
                     </span>
                   </div>
 
                   {lead.notes.length > 0 && (
-                    <p className="text-[11px] text-neutral-600 line-clamp-1 mt-1.5 italic bg-neutral-50 p-1 rounded border border-neutral-100">
+                    <p className="text-[11px] text-[#475569] line-clamp-1 mt-1.5 italic bg-[#F8FAFC] p-1.5 rounded border border-[#E2E8F0]">
                       "{lead.notes[0]}"
                     </p>
                   )}
@@ -285,7 +265,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       e.stopPropagation();
                       onStartCall(lead);
                     }}
-                    className="flex items-center justify-center gap-1 bg-[#0D6E44] hover:bg-[#0A5735] active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-xs transition-all"
+                    className="flex items-center justify-center gap-1 bg-[#B8934A] hover:bg-[#A68035] active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer"
                     title="Initiate Agent Call"
                   >
                     <PhoneCall className="w-3.5 h-3.5" />
@@ -293,7 +273,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   </button>
                   <button
                     onClick={() => onSelectLead(lead)}
-                    className="text-[11px] text-neutral-600 hover:text-neutral-900 font-medium text-center py-1 rounded bg-neutral-100 hover:bg-neutral-200 transition-colors"
+                    className="text-[11px] text-[#64748B] hover:text-[#0F172A] font-medium text-center py-1 rounded bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] transition-colors cursor-pointer"
                   >
                     Details
                   </button>
@@ -301,24 +281,24 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </div>
 
               {/* Lead Card Meta Footer */}
-              <div className="mt-2.5 pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-500">
-                <span>Last contact: <strong className="text-neutral-700">{lead.lastContact}</strong></span>
-                <span>Next follow-up: <strong className="text-emerald-800">{lead.nextFollowUp || 'Not scheduled'}</strong></span>
+              <div className="mt-2.5 pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
+                <span>Last contact: <strong className="text-[#334155]">{lead.lastContact}</strong></span>
+                <span>Next follow-up: <strong className="text-[#8C6B24]">{lead.nextFollowUp || 'Not scheduled'}</strong></span>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 4. Pending Follow-ups Queue */}
+      {/* 5. Pending Follow-ups Queue */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-neutral-900">Today's Scheduled Calls</h3>
+          <h3 className="text-sm font-bold text-[#0F172A]">Today's Scheduled Calls</h3>
           <button
             onClick={() => onNavigateTab('followups')}
-            className="text-xs text-[#0D6E44] font-semibold flex items-center hover:underline"
+            className="text-xs text-[#8C6B24] font-semibold flex items-center hover:underline cursor-pointer"
           >
-            Manage Queue <ChevronRight className="w-3.5 h-3.5" />
+            Manage Queue <ChevronRight className="w-3.5 h-3.5 text-[#B8934A]" />
           </button>
         </div>
 
@@ -326,18 +306,18 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           {todayFollowUpsList.slice(0, 3).map((fu) => (
             <div
               key={fu.id}
-              className="bg-white rounded-lg p-3 border border-neutral-200/80 flex items-center justify-between gap-3 shadow-2xs"
+              className="bg-white rounded-xl p-3 border border-[#E5E7EB] flex items-center justify-between gap-3 shadow-xs"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-neutral-900 truncate">
+                  <span className="text-xs font-bold text-[#0F172A] truncate">
                     {fu.customerName}
                   </span>
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                  <span className="text-[10px] font-bold text-[#8C6B24] bg-[#FAF6EE] px-1.5 py-0.5 rounded border border-[#E8DFCF] font-mono">
                     {fu.time}
                   </span>
                 </div>
-                <p className="text-[11px] text-neutral-500 truncate mt-0.5">
+                <p className="text-[11px] text-[#64748B] truncate mt-0.5">
                   {fu.project} • {fu.reason}
                 </p>
               </div>
@@ -347,29 +327,29 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   const matched = leads.find((l) => l.id === fu.leadId);
                   if (matched) onStartCall(matched);
                 }}
-                className="w-8 h-8 rounded-full bg-emerald-50 hover:bg-emerald-100 text-[#0D6E44] flex items-center justify-center shrink-0 transition-colors border border-emerald-200"
+                className="w-8 h-8 rounded-full bg-[#FAF6EE] hover:bg-[#F5EFE3] text-[#8C6B24] flex items-center justify-center shrink-0 transition-colors border border-[#E8DFCF] cursor-pointer shadow-2xs"
                 title="Call Follow-up"
               >
-                <PhoneCall className="w-4 h-4" />
+                <PhoneCall className="w-4 h-4 text-[#B8934A]" />
               </button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 5. Real Estate Corporate Notice / Architecture Note */}
-      <div className="bg-emerald-950 text-white rounded-xl p-3.5 text-xs shadow-xs border border-emerald-800/60">
-        <div className="flex items-center justify-between font-bold text-emerald-200 mb-1">
+      {/* 6. Real Estate Corporate CRM Notice */}
+      <div className="bg-[#FAF6EE] rounded-xl p-3.5 text-xs shadow-xs border border-[#E8DFCF]">
+        <div className="flex items-center justify-between font-bold text-[#8C6B24] mb-1">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span>Winstone Real Estate Agent System • Phase 3 CRM Integrated</span>
+            <Sparkles className="w-4 h-4 text-[#B8934A]" />
+            <span>Winstone Real Estate Agent System • Clean Luxury Edition</span>
           </div>
-          <span className="text-[10px] font-mono text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-700/50">
-            x-device-token
+          <span className="text-[10px] font-mono text-[#8C6B24] bg-white px-2 py-0.5 rounded border border-[#E8DFCF]">
+            CRM Active
           </span>
         </div>
-        <p className="text-emerald-100/90 text-[11px] leading-relaxed">
-          Local-first Room Database architecture verified with remote Winstone Web CRM API (<span className="font-mono text-emerald-300">https://webcrm.winstonebd.com</span>). Automated WorkManager sync queue, telephony state emissions, and conflict reconciliation active.
+        <p className="text-[#64748B] text-[11px] leading-relaxed">
+          Local-first Room Database architecture verified with remote Winstone Web CRM backend (<span className="font-mono text-[#8C6B24]">webcrm.winstonebd.com</span>). Automated sync queue, telephony state emissions, and conflict reconciliation active.
         </p>
       </div>
     </div>

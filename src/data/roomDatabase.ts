@@ -103,67 +103,31 @@ class WinstoneAgentRoomDatabase {
   }
 
   /**
-   * Database Initialization & Clean Seed Mechanism
-   * Executes initial data seeding ONCE on fresh installation.
-   * Never duplicates leads (Md. Rafiqul Islam, Nusrat Jahan) on subsequent runs.
+   * Database Initialization
+   * Room acts strictly as local cache, offline store, and pending sync queue.
+   * Business data is populated exclusively from verified Winstone CRM sync or real agent operations.
    */
   private initializeDatabase(): void {
     try {
       const currentVersion = safeLocalStorage.getItem(DB_VERSION_KEY);
-      const isSeeded = safeLocalStorage.getItem(DB_SEEDED_KEY);
 
-      if (!currentVersion || !isSeeded) {
-        // First database creation: Seed Phase 1 demo data
-        safeLocalStorage.setItem(DB_VERSION_KEY, '1');
-        safeLocalStorage.setItem(TABLE_AGENTS, JSON.stringify(mockAgent));
-        safeLocalStorage.setItem(TABLE_LEADS, JSON.stringify(initialLeads));
-        safeLocalStorage.setItem(TABLE_FOLLOW_UPS, JSON.stringify(initialFollowUps));
-
-        // Initial call activities extracted from initial leads
-        const initialActivities: CallRecord[] = [];
-        initialLeads.forEach((lead) => {
-          if (lead.callHistory && lead.callHistory.length > 0) {
-            initialActivities.push(...lead.callHistory);
-          }
-        });
-        safeLocalStorage.setItem(TABLE_CALL_ACTIVITIES, JSON.stringify(initialActivities));
-        safeLocalStorage.setItem(TABLE_SYNC_QUEUE, JSON.stringify([]));
-
-        safeLocalStorage.setItem(DB_SEEDED_KEY, 'true');
-      }
-
-      // Ensure WhatsApp table is populated if missing
-      if (!safeLocalStorage.getItem(TABLE_WHATSAPP_MESSAGES)) {
-        const sampleWhatsApp: RemoteWhatsAppDto[] = [
-          {
-            id: 'wa-msg-101',
-            lead_id: 'lead-1',
-            phone: '+880 1711-234567',
-            direction: 'inbound',
-            message: 'Hello, could you please send me the brochure and floor plan for Gulshan North Tower 2,450 sqft unit?',
-            sent_at: '2026-09-15T09:15:00Z',
-            status: 'read',
-          },
-          {
-            id: 'wa-msg-102',
-            lead_id: 'lead-1',
-            phone: '+880 1711-234567',
-            direction: 'outbound',
-            message: 'Greetings Mr. Rafiqul. The official PDF brochure with floor layouts has been dispatched to your email. I will follow up with you after 3 PM.',
-            sent_at: '2026-09-15T09:22:00Z',
-            status: 'delivered',
-          },
-          {
-            id: 'wa-msg-103',
-            lead_id: 'lead-2',
-            phone: '+880 1819-345678',
-            direction: 'inbound',
-            message: 'Is the Banani Lakefront 1,850 sqft 14th floor unit still available for weekend site visit?',
-            sent_at: '2026-09-15T11:05:00Z',
-            status: 'read',
-          },
-        ];
-        safeLocalStorage.setItem(TABLE_WHATSAPP_MESSAGES, JSON.stringify(sampleWhatsApp));
+      if (!currentVersion) {
+        safeLocalStorage.setItem(DB_VERSION_KEY, '3');
+        if (!safeLocalStorage.getItem(TABLE_LEADS)) {
+          safeLocalStorage.setItem(TABLE_LEADS, JSON.stringify([]));
+        }
+        if (!safeLocalStorage.getItem(TABLE_FOLLOW_UPS)) {
+          safeLocalStorage.setItem(TABLE_FOLLOW_UPS, JSON.stringify([]));
+        }
+        if (!safeLocalStorage.getItem(TABLE_CALL_ACTIVITIES)) {
+          safeLocalStorage.setItem(TABLE_CALL_ACTIVITIES, JSON.stringify([]));
+        }
+        if (!safeLocalStorage.getItem(TABLE_SYNC_QUEUE)) {
+          safeLocalStorage.setItem(TABLE_SYNC_QUEUE, JSON.stringify([]));
+        }
+        if (!safeLocalStorage.getItem(TABLE_WHATSAPP_MESSAGES)) {
+          safeLocalStorage.setItem(TABLE_WHATSAPP_MESSAGES, JSON.stringify([]));
+        }
       }
     } catch (err) {
       console.warn('WinstoneAgentRoomDatabase initialization notice:', err);

@@ -13,9 +13,9 @@ export const TemperatureBadge: React.FC<{ temperature: LeadTemperature; size?: '
         <span
           className={`inline-flex items-center gap-1 font-semibold rounded-md border ${
             isSm ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
-          } bg-red-50 text-red-700 border-red-200`}
+          } bg-rose-50 text-rose-700 border-rose-200`}
         >
-          <Flame className={isSm ? 'w-3 h-3 text-red-600' : 'w-3.5 h-3.5 text-red-600'} />
+          <Flame className={isSm ? 'w-3 h-3 text-rose-600' : 'w-3.5 h-3.5 text-rose-600'} />
           Hot
         </span>
       );
@@ -35,7 +35,7 @@ export const TemperatureBadge: React.FC<{ temperature: LeadTemperature; size?: '
         <span
           className={`inline-flex items-center gap-1 font-semibold rounded-md border ${
             isSm ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
-          } bg-slate-50 text-slate-700 border-slate-200`}
+          } bg-slate-100 text-slate-700 border-slate-200`}
         >
           <Snowflake className={isSm ? 'w-3 h-3 text-slate-500' : 'w-3.5 h-3.5 text-slate-500'} />
           Cold
@@ -50,19 +50,19 @@ export const CategoryBadge: React.FC<{ category: OperationalCategory; size?: 'sm
 }) => {
   const isSm = size === 'sm';
 
-  // Distinct clean styling for Category A/B/C/D (Operational readiness)
+  // Distinct clean luxury light styling for Category A/B/C/D
   const styles: Record<OperationalCategory, string> = {
-    A: 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold',
+    A: 'bg-[#FAF6EE] text-[#8C6B24] border-[#E2D5B8] font-bold shadow-2xs',
     B: 'bg-blue-50 text-blue-800 border-blue-200 font-semibold',
-    C: 'bg-neutral-100 text-neutral-700 border-neutral-300 font-medium',
-    D: 'bg-zinc-100 text-zinc-600 border-zinc-200 font-medium',
+    C: 'bg-neutral-100 text-neutral-700 border-neutral-200 font-medium',
+    D: 'bg-slate-50 text-slate-600 border-slate-200 font-medium',
   };
 
   const descriptions: Record<OperationalCategory, string> = {
-    A: 'Cat A (Immediate)',
-    B: 'Cat B (1-3 Mo)',
-    C: 'Cat C (Exploring)',
-    D: 'Cat D (Low Fit)',
+    A: 'Cat A (Immediate High-Value)',
+    B: 'Cat B (1-3 Months)',
+    C: 'Cat C (Exploring Market)',
+    D: 'Cat D (Low Priority)',
   };
 
   return (
@@ -83,20 +83,20 @@ export const StatusBadge: React.FC<{ status: LeadStatus; size?: 'sm' | 'md' }> =
 }) => {
   const isSm = size === 'sm';
   const colorMap: Record<LeadStatus, string> = {
-    New: 'bg-emerald-600 text-white font-bold',
-    Interested: 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium',
-    'Active Lead': 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium',
-    'Follow-up': 'bg-amber-100 text-amber-800 border border-amber-200 font-medium',
-    'Site Visit': 'bg-purple-100 text-purple-800 border border-purple-200 font-medium',
-    Negotiation: 'bg-indigo-100 text-indigo-800 border border-indigo-200 font-medium',
-    Closed: 'bg-green-100 text-green-900 border border-green-300 font-bold',
-    'Closed Won': 'bg-green-100 text-green-900 border border-green-300 font-bold',
+    New: 'bg-[#B8934A] text-white font-bold shadow-2xs',
+    Interested: 'bg-[#FAF6EE] text-[#8C6B24] border border-[#E2D5B8] font-semibold',
+    'Active Lead': 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold',
+    'Follow-up': 'bg-amber-50 text-amber-800 border border-amber-200 font-medium',
+    'Site Visit': 'bg-purple-50 text-purple-800 border border-purple-200 font-medium',
+    Negotiation: 'bg-indigo-50 text-indigo-800 border border-indigo-200 font-medium',
+    Closed: 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold',
+    'Closed Won': 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold',
     Lost: 'bg-neutral-100 text-neutral-600 border border-neutral-200 font-medium',
   };
 
   return (
     <span
-      className={`inline-flex items-center rounded-md ${colorMap[status]} ${
+      className={`inline-flex items-center rounded-md ${colorMap[status] || 'bg-neutral-100 text-neutral-700 border border-neutral-200'} ${
         isSm ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
       }`}
     >

@@ -1098,24 +1098,24 @@ class EncryptedAuthRepository(context: Context) {
   };
 
   return (
-    <div id="kotlin-code-viewer-modal" className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
-      <div className="bg-neutral-900 border border-neutral-700 w-full max-w-4xl h-[88vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-neutral-100">
+    <div id="kotlin-code-viewer-modal" className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-3 sm:p-6">
+      <div className="bg-white border border-[#E5E7EB] w-full max-w-4xl h-[88vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-[#0F172A]">
         {/* Header */}
-        <div className="px-5 py-3.5 border-b border-neutral-800 flex items-center justify-between bg-neutral-950">
+        <div className="px-5 py-3.5 border-b border-[#E8DFCF] flex items-center justify-between bg-[#FAF9F6]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Database className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-xl bg-white border border-[#E8DFCF] flex items-center justify-center text-[#8C6B24] shadow-2xs">
+              <Database className="w-4 h-4 text-[#B8934A]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-white">
+                <h3 className="font-bold text-sm text-[#0F172A]">
                   Winstone Agent • Phase 3 Architecture & Room Database
                 </h3>
-                <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-mono">
+                <span className="bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] px-2 py-0.5 rounded text-[10px] font-mono font-bold">
                   Phase 3 CRM Gate
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-[#64748B]">
                 Room SQLite, WorkManager SyncWorker, Remote CRM Gate & Encrypted Auth
               </p>
             </div>
@@ -1125,15 +1125,15 @@ class EncryptedAuthRepository(context: Context) {
             <button
               id="copy-kotlin-file-btn"
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-emerald-400 rounded-lg text-xs font-semibold border border-neutral-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF6EE] hover:bg-[#F3ECE0] text-[#8C6B24] rounded-xl text-xs font-semibold border border-[#E8DFCF] transition-colors cursor-pointer shadow-2xs"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-[#B8934A]" /> : <Copy className="w-3.5 h-3.5 text-[#B8934A]" />}
               <span>{copied ? 'Copied!' : 'Copy Code'}</span>
             </button>
             <button
               id="close-kotlin-viewer-btn"
               onClick={onClose}
-              className="text-neutral-400 hover:text-white p-1.5 rounded-lg cursor-pointer"
+              className="text-[#94A3B8] hover:text-[#0F172A] p-1.5 rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1141,39 +1141,39 @@ class EncryptedAuthRepository(context: Context) {
         </div>
 
         {/* File Tabs */}
-        <div className="flex items-center gap-1.5 px-4 py-2.5 bg-neutral-950/80 border-b border-neutral-800 overflow-x-auto text-xs">
+        <div className="flex items-center gap-1.5 px-4 py-2.5 bg-[#FAF9F6] border-b border-[#E8DFCF] overflow-x-auto text-xs no-scrollbar">
           {Object.keys(files).map((fileName) => (
             <button
               id={`tab-${fileName.replace('.', '-')}`}
               key={fileName}
               onClick={() => setActiveFile(fileName)}
-              className={`px-3 py-1.5 rounded-md font-mono flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg font-mono flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeFile === fileName
-                  ? 'bg-neutral-800 text-emerald-400 font-bold border border-neutral-700 shadow-xs'
-                  : 'text-neutral-400 hover:text-neutral-200'
+                  ? 'bg-white text-[#8C6B24] font-bold border border-[#E8DFCF] shadow-2xs'
+                  : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
-              <FileCode className="w-3.5 h-3.5" />
+              <FileCode className="w-3.5 h-3.5 text-[#B8934A]" />
               <span>{fileName}</span>
             </button>
           ))}
         </div>
 
         {/* File Description */}
-        <div className="px-5 py-2.5 bg-neutral-900/90 text-xs text-neutral-300 border-b border-neutral-800 flex items-center justify-between">
+        <div className="px-5 py-2.5 bg-white text-xs text-[#334155] border-b border-[#F1F5F9] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded text-[11px] font-mono">
+            <span className="bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] px-2 py-0.5 rounded text-[11px] font-mono font-medium">
               {files[activeFile].category}
             </span>
-            <span>{files[activeFile].desc}</span>
+            <span className="text-[#64748B]">{files[activeFile].desc}</span>
           </div>
-          <span className="text-[11px] text-emerald-400 font-mono shrink-0 hidden sm:inline">
+          <span className="text-[11px] text-[#8C6B24] font-mono shrink-0 hidden sm:inline font-semibold">
             Android Room 2.6 • Kotlin Flow
           </span>
         </div>
 
         {/* Code Content */}
-        <div className="flex-1 overflow-auto p-5 font-mono text-xs leading-relaxed bg-neutral-950 text-neutral-200 selection:bg-emerald-500 selection:text-white">
+        <div className="flex-1 overflow-auto p-5 font-mono text-xs leading-relaxed bg-[#F8FAFC] text-[#1E293B] selection:bg-[#FAF0DB] selection:text-[#8C6B24] custom-scrollbar border-t border-[#F1F5F9]">
           <pre>{files[activeFile].code}</pre>
         </div>
       </div>

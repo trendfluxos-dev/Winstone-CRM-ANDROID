@@ -1,1 +1,65 @@
 @import "tailwindcss";
+
+@layer utilities {
+  /* Luxury Gold & Metallic Accents (Refined Champagne Gold) */
+  .text-gold {
+    color: #B8934A;
+  }
+  .text-champagne {
+    color: #9E7D3B;
+  }
+  .bg-gold {
+    background-color: #B8934A;
+  }
+  .bg-gold-light {
+    background-color: #FAF6EE;
+  }
+  .bg-champagne {
+    background-color: #F7F3E9;
+  }
+  .border-gold {
+    border-color: #DBCDB0;
+  }
+  .border-gold-subtle {
+    border-color: #EFE8DA;
+  }
+
+  /* Clean luxury light panels */
+  .bg-luxury-white {
+    background-color: #FFFFFF;
+  }
+  .bg-luxury-canvas {
+    background-color: #F8F9FA;
+  }
+  .bg-luxury-ivory {
+    background-color: #FDFBF7;
+  }
+  .border-luxury-neutral {
+    border-color: #E5E7EB;
+  }
+
+  /* Custom scrollbar in clean light theme */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #F1F5F9;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+

@@ -1,64 +1,88 @@
 import React from 'react';
-import { LayoutDashboard, Users, CalendarClock, BarChart3, User } from 'lucide-react';
-import { NavTab } from '../types';
+import { LayoutDashboard, Users, Clock, BarChart2, UserCheck } from 'lucide-react';
+import { NavigationTab } from '../types';
 
 interface BottomNavBarProps {
-  currentTab: NavTab;
-  onSelectTab: (tab: NavTab) => void;
-  pendingFollowUpsCount: number;
-  newLeadsCount: number;
+  currentTab: NavigationTab;
+  onSelectTab: (tab: NavigationTab) => void;
+  unreadCount?: number;
+  dueFollowUpsCount?: number;
 }
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   currentTab,
   onSelectTab,
-  pendingFollowUpsCount,
-  newLeadsCount,
+  unreadCount = 0,
+  dueFollowUpsCount = 0,
 }) => {
-  const navItems: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'leads', label: 'Leads', icon: Users, badge: newLeadsCount > 0 ? newLeadsCount : undefined },
-    { id: 'followups', label: 'Follow-ups', icon: CalendarClock, badge: pendingFollowUpsCount > 0 ? pendingFollowUpsCount : undefined },
-    { id: 'performance', label: 'Performance', icon: BarChart3 },
-    { id: 'profile', label: 'Profile', icon: User },
+  const navItems = [
+    {
+      id: 'dashboard' as NavigationTab,
+      label: 'Dashboard',
+      icon: LayoutDashboard,
+      badge: unreadCount > 0 ? unreadCount : undefined,
+    },
+    {
+      id: 'leads' as NavigationTab,
+      label: 'Leads',
+      icon: Users,
+    },
+    {
+      id: 'followups' as NavigationTab,
+      label: 'Follow-ups',
+      icon: Clock,
+      badge: dueFollowUpsCount > 0 ? dueFollowUpsCount : undefined,
+    },
+    {
+      id: 'performance' as NavigationTab,
+      label: 'Performance',
+      icon: BarChart2,
+    },
+    {
+      id: 'profile' as NavigationTab,
+      label: 'Profile',
+      icon: UserCheck,
+    },
   ];
 
   return (
     <nav
       id="winstone-bottom-nav"
-      className="bg-white border-t border-neutral-200/90 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] px-2 py-1.5 flex items-center justify-around z-30 select-none shrink-0"
+      className="bg-white border-t border-[#E5E7EB] px-2 py-1.5 flex items-center justify-around z-20 shrink-0 sticky bottom-0 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]"
     >
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = currentTab === item.id;
+
         return (
           <button
             key={item.id}
-            id={`nav-item-${item.id}`}
+            id={`bottom-nav-${item.id}`}
             onClick={() => onSelectTab(item.id)}
-            className="flex-1 flex flex-col items-center justify-center py-1 px-1 relative transition-colors group focus:outline-none"
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative cursor-pointer min-w-[58px] ${
+              isActive
+                ? 'text-[#8C6B24] font-bold bg-[#FAF6EE]'
+                : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F8F9FA]'
+            }`}
           >
-            <div
-              className={`relative px-3 py-1 rounded-full transition-all duration-150 ${
-                isActive
-                  ? 'bg-[#0D6E44]/12 text-[#0D6E44] font-semibold'
-                  : 'text-neutral-500 hover:text-neutral-800'
-              }`}
-            >
-              <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-105' : 'group-hover:scale-105'}`} />
+            <div className="relative">
+              <Icon
+                className={`w-5 h-5 transition-transform ${
+                  isActive ? 'scale-110 text-[#B8934A]' : 'text-[#64748B]'
+                }`}
+              />
               {item.badge !== undefined && item.badge > 0 && (
-                <span className="absolute -top-1 -right-1.5 min-w-[17px] h-[17px] bg-[#0D6E44] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-white">
-                  {item.badge}
+                <span className="absolute -top-1 -right-2 bg-[#B8934A] text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                  {item.badge > 99 ? '99+' : item.badge}
                 </span>
               )}
             </div>
-            <span
-              className={`text-[11px] mt-0.5 tracking-tight whitespace-nowrap transition-colors ${
-                isActive ? 'text-[#0D6E44] font-bold' : 'text-neutral-500 font-medium'
-              }`}
-            >
+            <span className="text-[10px] tracking-tight mt-1 truncate">
               {item.label}
             </span>
+            {isActive && (
+              <span className="w-1 h-1 rounded-full bg-[#B8934A] mt-0.5" />
+            )}
           </button>
         );
       })}

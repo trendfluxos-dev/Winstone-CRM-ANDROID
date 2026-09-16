@@ -6,10 +6,7 @@ import {
   CalendarCheck,
   MapPin,
   Clock,
-  Award,
   BarChart2,
-  PieChart,
-  Percent,
 } from 'lucide-react';
 import { PerformanceData, MetricBreakdown } from '../types';
 
@@ -34,7 +31,7 @@ export const PerformanceScreen: React.FC<PerformanceScreenProps> = ({ performanc
       ? Math.round((currentMetrics.interestedLeads / currentMetrics.connectedCalls) * 100)
       : 0;
 
-  // Mock bar distributions for visual activity chart
+  // Visual activity chart
   const activityDistribution =
     period === 'today'
       ? [
@@ -62,36 +59,36 @@ export const PerformanceScreen: React.FC<PerformanceScreenProps> = ({ performanc
   const maxCalls = Math.max(...activityDistribution.map((d) => d.calls), 1);
 
   return (
-    <div id="performance-screen" className="flex-1 flex flex-col bg-neutral-50 overflow-hidden">
+    <div id="performance-screen" className="flex-1 flex flex-col bg-[#F8F9FA] text-[#0F172A] overflow-hidden">
       {/* Timeframe Selector */}
-      <div className="bg-white p-3 border-b border-neutral-200 shadow-2xs shrink-0">
-        <div className="grid grid-cols-3 gap-1 p-1 bg-neutral-100 rounded-xl">
+      <div className="bg-white p-3 border-b border-[#E5E7EB] shadow-2xs shrink-0">
+        <div className="grid grid-cols-3 gap-1 p-1 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
           <button
             onClick={() => setPeriod('today')}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               period === 'today'
-                ? 'bg-white text-[#0D6E44] shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                ? 'bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] shadow-2xs'
+                : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             Today
           </button>
           <button
             onClick={() => setPeriod('sevenDays')}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               period === 'sevenDays'
-                ? 'bg-white text-[#0D6E44] shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                ? 'bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] shadow-2xs'
+                : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             7 Days
           </button>
           <button
             onClick={() => setPeriod('thirtyDays')}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               period === 'thirtyDays'
-                ? 'bg-white text-[#0D6E44] shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                ? 'bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] shadow-2xs'
+                : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
             30 Days
@@ -100,43 +97,43 @@ export const PerformanceScreen: React.FC<PerformanceScreenProps> = ({ performanc
       </div>
 
       {/* Analytics Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24 custom-scrollbar">
         {/* Conversion Ratios Banner */}
-        <div className="bg-white rounded-xl p-4 border border-neutral-200/90 shadow-2xs space-y-3">
+        <div className="bg-white rounded-2xl p-4 border border-[#E5E7EB] shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-[#8C6B24] uppercase tracking-wider">
               Efficiency Rates
             </h3>
-            <span className="text-[11px] text-neutral-500 font-mono">
+            <span className="text-[11px] text-[#64748B] font-mono">
               Period: {period === 'today' ? 'Today' : period === 'sevenDays' ? 'Last 7 Days' : 'Last 30 Days'}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl">
-              <span className="text-[11px] text-emerald-800 font-medium block">Call Connect Rate</span>
-              <div className="text-xl font-extrabold text-emerald-900 mt-0.5">{connectRate}%</div>
-              <div className="w-full bg-emerald-200/70 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="p-3 bg-[#FAF9F6] border border-[#E8DFCF] rounded-xl">
+              <span className="text-[11px] text-[#64748B] font-medium block">Call Connect Rate</span>
+              <div className="text-xl font-extrabold text-[#0F172A] mt-0.5">{connectRate}%</div>
+              <div className="w-full bg-[#E2E8F0] h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
-                  className="bg-[#0D6E44] h-full rounded-full transition-all"
+                  className="bg-[#B8934A] h-full rounded-full transition-all"
                   style={{ width: `${connectRate}%` }}
                 />
               </div>
-              <span className="text-[10px] text-emerald-700 mt-1 block">
+              <span className="text-[10px] text-[#8C6B24] mt-1 block font-medium">
                 {currentMetrics.connectedCalls} of {currentMetrics.callsMade} dials
               </span>
             </div>
 
-            <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl">
-              <span className="text-[11px] text-blue-800 font-medium block">Lead Interest Rate</span>
-              <div className="text-xl font-extrabold text-blue-900 mt-0.5">{interestRate}%</div>
-              <div className="w-full bg-blue-200/70 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="p-3 bg-[#FAF9F6] border border-[#E8DFCF] rounded-xl">
+              <span className="text-[11px] text-[#64748B] font-medium block">Lead Interest Rate</span>
+              <div className="text-xl font-extrabold text-[#8C6B24] mt-0.5">{interestRate}%</div>
+              <div className="w-full bg-[#E2E8F0] h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
-                  className="bg-blue-600 h-full rounded-full transition-all"
+                  className="bg-[#B8934A] h-full rounded-full transition-all"
                   style={{ width: `${interestRate}%` }}
                 />
               </div>
-              <span className="text-[10px] text-blue-700 mt-1 block">
+              <span className="text-[10px] text-[#64748B] mt-1 block font-medium">
                 {currentMetrics.interestedLeads} of {currentMetrics.connectedCalls} connected
               </span>
             </div>
@@ -145,85 +142,85 @@ export const PerformanceScreen: React.FC<PerformanceScreenProps> = ({ performanc
 
         {/* 6 Core Required Metrics Grid */}
         <div className="space-y-2">
-          <h3 className="text-xs font-bold text-neutral-600 uppercase tracking-wider px-0.5">
+          <h3 className="text-xs font-bold text-[#475569] uppercase tracking-wider px-0.5">
             Key Operational Output
           </h3>
 
           <div className="grid grid-cols-2 gap-2.5">
             {/* 1. Leads Assigned */}
-            <div className="bg-white p-3.5 rounded-xl border border-neutral-200/80 shadow-2xs">
-              <span className="text-[11px] text-neutral-500 font-medium block">Leads Assigned</span>
-              <div className="text-xl font-bold text-neutral-900 mt-1">
+            <div className="bg-white p-3.5 rounded-2xl border border-[#E5E7EB] shadow-xs">
+              <span className="text-[11px] text-[#64748B] font-medium block">Leads Assigned</span>
+              <div className="text-xl font-bold text-[#0F172A] mt-1">
                 {currentMetrics.leadsAssigned}
               </div>
-              <span className="text-[10px] text-neutral-400 mt-0.5 block">Via Meta CRM & Web</span>
+              <span className="text-[10px] text-[#94A3B8] mt-0.5 block">Via Meta CRM & Web</span>
             </div>
 
             {/* 2. Total Calls */}
-            <div className="bg-white p-3.5 rounded-xl border border-neutral-200/80 shadow-2xs">
-              <span className="text-[11px] text-neutral-500 font-medium block">Total Dials</span>
-              <div className="text-xl font-bold text-neutral-900 mt-1">
+            <div className="bg-white p-3.5 rounded-2xl border border-[#E5E7EB] shadow-xs">
+              <span className="text-[11px] text-[#64748B] font-medium block">Total Dials</span>
+              <div className="text-xl font-bold text-[#0F172A] mt-1">
                 {currentMetrics.callsMade}
               </div>
-              <span className="text-[10px] text-neutral-400 mt-0.5 block">Outbound attempts</span>
+              <span className="text-[10px] text-[#94A3B8] mt-0.5 block">Outbound attempts</span>
             </div>
 
             {/* 3. Connected Calls */}
-            <div className="bg-white p-3.5 rounded-xl border border-neutral-200/80 shadow-2xs">
-              <span className="text-[11px] text-neutral-500 font-medium block">Connected Calls</span>
-              <div className="text-xl font-bold text-emerald-800 mt-1">
+            <div className="bg-white p-3.5 rounded-2xl border border-[#E5E7EB] shadow-xs">
+              <span className="text-[11px] text-[#64748B] font-medium block">Connected Calls</span>
+              <div className="text-xl font-bold text-[#8C6B24] mt-1">
                 {currentMetrics.connectedCalls}
               </div>
-              <span className="text-[10px] text-emerald-600 mt-0.5 block">Answered by prospect</span>
+              <span className="text-[10px] text-[#8C6B24] mt-0.5 block">Answered by prospect</span>
             </div>
 
             {/* 4. Interested Leads */}
-            <div className="bg-white p-3.5 rounded-xl border border-neutral-200/80 shadow-2xs">
-              <span className="text-[11px] text-neutral-500 font-medium block">Interested Leads</span>
-              <div className="text-xl font-bold text-[#0D6E44] mt-1">
+            <div className="bg-white p-3.5 rounded-2xl border border-[#E5E7EB] shadow-xs">
+              <span className="text-[11px] text-[#64748B] font-medium block">Interested Leads</span>
+              <div className="text-xl font-bold text-[#B8934A] mt-1">
                 {currentMetrics.interestedLeads}
               </div>
-              <span className="text-[10px] text-neutral-400 mt-0.5 block">Hot & Warm classified</span>
+              <span className="text-[10px] text-[#8C6B24] mt-0.5 block">Hot & Warm classified</span>
             </div>
 
             {/* 5. Follow-ups Done */}
-            <div className="bg-white p-3.5 rounded-xl border border-neutral-200/80 shadow-2xs">
-              <span className="text-[11px] text-neutral-500 font-medium block">Follow-ups Executed</span>
-              <div className="text-xl font-bold text-neutral-900 mt-1">
+            <div className="bg-white p-3.5 rounded-2xl border border-[#E5E7EB] shadow-xs">
+              <span className="text-[11px] text-[#64748B] font-medium block">Follow-ups Executed</span>
+              <div className="text-xl font-bold text-[#0F172A] mt-1">
                 {currentMetrics.followUpsDone}
               </div>
-              <span className="text-[10px] text-neutral-400 mt-0.5 block">Completed interactions</span>
+              <span className="text-[10px] text-[#94A3B8] mt-0.5 block">Completed interactions</span>
             </div>
 
             {/* 6. Site Visits */}
-            <div className="bg-white p-3.5 rounded-xl border border-neutral-200/80 shadow-2xs">
-              <span className="text-[11px] text-neutral-500 font-medium block">Site Visits Booked</span>
-              <div className="text-xl font-bold text-purple-900 mt-1">
+            <div className="bg-white p-3.5 rounded-2xl border border-[#E5E7EB] shadow-xs">
+              <span className="text-[11px] text-[#64748B] font-medium block">Site Visits Booked</span>
+              <div className="text-xl font-bold text-[#8C6B24] mt-1">
                 {currentMetrics.siteVisits}
               </div>
-              <span className="text-[10px] text-purple-600 mt-0.5 block">Physical site tours</span>
+              <span className="text-[10px] text-[#94A3B8] mt-0.5 block">Physical site tours</span>
             </div>
           </div>
         </div>
 
-        {/* Call Volume Chart (Native Bar Component) */}
-        <div className="bg-white rounded-xl p-4 border border-neutral-200/90 shadow-2xs space-y-3">
+        {/* Call Volume Chart */}
+        <div className="bg-white rounded-2xl p-4 border border-[#E5E7EB] shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-[#8C6B24] uppercase tracking-wider">
               Call Activity Distribution
             </h3>
             <div className="flex items-center gap-3 text-[10px]">
-              <span className="flex items-center gap-1 text-neutral-500">
-                <span className="w-2 h-2 rounded-xs bg-neutral-300" /> Dials
+              <span className="flex items-center gap-1 text-[#64748B]">
+                <span className="w-2 h-2 rounded-xs bg-[#CBD5E1]" /> Dials
               </span>
-              <span className="flex items-center gap-1 text-emerald-700 font-semibold">
-                <span className="w-2 h-2 rounded-xs bg-[#0D6E44]" /> Connected
+              <span className="flex items-center gap-1 text-[#8C6B24] font-semibold">
+                <span className="w-2 h-2 rounded-xs bg-[#B8934A]" /> Connected
               </span>
             </div>
           </div>
 
           {/* Bar Columns */}
-          <div className="h-36 pt-4 flex items-end justify-around gap-2 border-b border-neutral-100">
+          <div className="h-36 pt-4 flex items-end justify-around gap-2 border-b border-[#E2E8F0]">
             {activityDistribution.map((col, idx) => {
               const dialHeight = Math.round((col.calls / maxCalls) * 100);
               const connHeight = Math.round((col.conn / maxCalls) * 100);
@@ -232,18 +229,18 @@ export const PerformanceScreen: React.FC<PerformanceScreenProps> = ({ performanc
                   <div className="w-full max-w-[32px] flex items-end justify-center gap-0.5 h-full">
                     {/* Dial bar */}
                     <div
-                      className="w-1/2 bg-neutral-200 rounded-t transition-all group-hover:bg-neutral-300"
+                      className="w-1/2 bg-[#E2E8F0] rounded-t transition-all group-hover:bg-[#CBD5E1]"
                       style={{ height: `${dialHeight}%` }}
                       title={`Total Dials: ${col.calls}`}
                     />
                     {/* Connected bar */}
                     <div
-                      className="w-1/2 bg-[#0D6E44] rounded-t transition-all group-hover:bg-[#0A5735]"
+                      className="w-1/2 bg-[#B8934A] rounded-t transition-all group-hover:bg-[#A68035]"
                       style={{ height: `${connHeight}%` }}
                       title={`Connected: ${col.conn}`}
                     />
                   </div>
-                  <span className="text-[10px] text-neutral-500 font-medium">
+                  <span className="text-[10px] text-[#64748B] font-medium">
                     {col.label}
                   </span>
                 </div>
@@ -251,17 +248,17 @@ export const PerformanceScreen: React.FC<PerformanceScreenProps> = ({ performanc
             })}
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-neutral-500 pt-1">
-            <span>Cumulative Talk Time: <strong>{currentMetrics.talkTimeMinutes} minutes</strong></span>
-            <span>Avg: <strong>{Math.round(currentMetrics.talkTimeMinutes / (currentMetrics.connectedCalls || 1))}m/call</strong></span>
+          <div className="flex items-center justify-between text-[11px] text-[#64748B] pt-1">
+            <span>Cumulative Talk Time: <strong className="text-[#0F172A]">{currentMetrics.talkTimeMinutes} minutes</strong></span>
+            <span>Avg: <strong className="text-[#8C6B24]">{Math.round(currentMetrics.talkTimeMinutes / (currentMetrics.connectedCalls || 1))}m/call</strong></span>
           </div>
         </div>
 
         {/* Objective Performance Statement */}
-        <div className="bg-neutral-100 rounded-xl p-3.5 border border-neutral-200 text-xs text-neutral-700 space-y-1">
-          <span className="font-bold text-neutral-900 block">Performance Audit Note</span>
-          <p className="text-[11px] text-neutral-600 leading-relaxed">
-            All metrics reflect local session and logged interactions. Call records and follow-up activities are synced locally to satisfy Phase 1 architecture verification.
+        <div className="bg-[#FAF9F6] rounded-xl p-3.5 border border-[#E8DFCF] text-xs text-[#64748B] space-y-1">
+          <span className="font-bold text-[#0F172A] block">Performance Audit Note</span>
+          <p className="text-[11px] text-[#64748B] leading-relaxed">
+            All metrics reflect local session and logged interactions. Call records and follow-up activities are synced locally and pushed to the Winstone CRM gateway.
           </p>
         </div>
       </div>

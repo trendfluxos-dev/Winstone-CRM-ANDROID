@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-  User,
-  ShieldCheck,
   MapPin,
   Briefcase,
   Hash,
@@ -10,32 +8,26 @@ import {
   Info,
   CheckCircle2,
   ChevronRight,
-  Layers,
-  Database,
-  PhoneCall,
-  Mic,
-  Sparkles,
-  Bell,
-  HardDrive,
-  Target,
   FileCode2,
 } from 'lucide-react';
 import { Agent } from '../types';
+import { WinstoneLogo } from './WinstoneLogo';
 
 interface ProfileScreenProps {
   agent: Agent;
   onLogout: () => void;
   onOpenKotlinViewer?: () => void;
+  onNavigateTab?: (tab: string) => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   agent,
   onLogout,
   onOpenKotlinViewer,
+  onNavigateTab,
 }) => {
   const [showAbout, setShowAbout] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showRoadmap, setShowRoadmap] = useState(false);
 
   const getInitials = (name?: string) => {
     if (!name) return 'AG';
@@ -46,35 +38,22 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     return name.substring(0, 2).toUpperCase();
   };
 
-  const integrationPoints = [
-    { title: '1. Winstone CRM API', desc: 'Secure REST/GraphQL gateway for bidirectional lead sync', icon: Database },
-    { title: '2. Supabase Auth & DB', desc: 'Agent JWT authentication & PostgreSQL lead persistence', icon: ShieldCheck },
-    { title: '3. Native Calling System', desc: 'Android Telecom / WebRTC outbound dialing engine', icon: PhoneCall },
-    { title: '4. Call Recording Pipeline', desc: 'Hardware audio capture with encrypted local cache', icon: Mic },
-    { title: '5. Audio Upload Service', desc: 'Background upload worker with retry queue', icon: HardDrive },
-    { title: '6. AI Call Summary', desc: 'Gemini-powered conversation transcription & action items', icon: Sparkles },
-    { title: '7. Push Notifications', desc: 'FCM push for urgent Meta leads and upcoming call alerts', icon: Bell },
-    { title: '8. Offline Queue & Sync', desc: 'Room Database & WorkManager for field offline reliability', icon: Layers },
-    { title: '9. Meta Lead Attribution', desc: 'Automatic pixel campaign & ad-set matching', icon: Target },
-    { title: '10. Site Visit Management', desc: 'Geolocation check-in and visitor gate pass generator', icon: MapPin },
-  ];
-
   return (
-    <div id="profile-screen" className="flex-1 flex flex-col bg-neutral-50 overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+    <div id="profile-screen" className="flex-1 flex flex-col bg-[#F8F9FA] text-[#0F172A] overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24 custom-scrollbar">
         {/* Agent Identity Card */}
-        <div className="bg-white rounded-xl p-4 border border-neutral-200/90 shadow-2xs space-y-3">
+        <div className="bg-white rounded-2xl p-4 border border-[#E5E7EB] shadow-xs space-y-3">
           <div className="flex items-center gap-3.5">
-            <div className="w-14 h-14 rounded-full bg-emerald-800 text-white text-lg font-bold flex items-center justify-center border-2 border-white shadow-xs shrink-0 ring-2 ring-emerald-100">
+            <div className="w-14 h-14 rounded-2xl bg-[#FAF6EE] text-[#8C6B24] text-lg font-bold flex items-center justify-center border border-[#E8DFCF] shadow-2xs shrink-0">
               {getInitials(agent.name)}
             </div>
             <div className="min-w-0">
-              <h2 className="text-base font-bold text-neutral-900 truncate">
+              <h2 className="text-base font-bold text-[#0F172A] truncate">
                 {agent.name}
               </h2>
-              <p className="text-xs text-[#0D6E44] font-semibold">{agent.role}</p>
-              <div className="flex items-center gap-1.5 text-xs text-neutral-500 mt-0.5">
-                <span className="font-mono text-[11px] bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-600">
+              <p className="text-xs text-[#8C6B24] font-semibold">{agent.role}</p>
+              <div className="flex items-center gap-1.5 text-xs text-[#64748B] mt-0.5">
+                <span className="font-mono text-[11px] bg-[#F8FAFC] px-2 py-0.5 rounded text-[#8C6B24] border border-[#E2E8F0] font-semibold">
                   {agent.employeeId}
                 </span>
                 <span>•</span>
@@ -86,111 +65,161 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             </div>
           </div>
 
-          <div className="pt-3 border-t border-neutral-100 space-y-2 text-xs">
-            <div className="flex items-center justify-between text-neutral-600">
-              <span className="flex items-center gap-1.5 text-neutral-400">
-                <MapPin className="w-3.5 h-3.5" /> Assigned Territory
+          <div className="pt-3 border-t border-[#F1F5F9] space-y-2 text-xs">
+            <div className="flex items-center justify-between text-[#334155]">
+              <span className="flex items-center gap-1.5 text-[#64748B] font-medium">
+                <MapPin className="w-3.5 h-3.5 text-[#B8934A]" /> Assigned Territory
               </span>
-              <span className="font-semibold text-neutral-800 text-right">{agent.territory}</span>
+              <span className="font-semibold text-[#0F172A] text-right">{agent.territory}</span>
             </div>
-            <div className="flex items-center justify-between text-neutral-600">
-              <span className="flex items-center gap-1.5 text-neutral-400">
-                <Briefcase className="w-3.5 h-3.5" /> Organization
+            <div className="flex items-center justify-between text-[#334155]">
+              <span className="flex items-center gap-1.5 text-[#64748B] font-medium">
+                <Briefcase className="w-3.5 h-3.5 text-[#B8934A]" /> Organization
               </span>
-              <span className="font-semibold text-neutral-800">Winstone Properties Ltd.</span>
+              <span className="font-semibold text-[#0F172A]">Winstone Properties Ltd.</span>
             </div>
-            <div className="flex items-center justify-between text-neutral-600">
-              <span className="flex items-center gap-1.5 text-neutral-400">
-                <Hash className="w-3.5 h-3.5" /> Build Version
+            <div className="flex items-center justify-between text-[#334155]">
+              <span className="flex items-center gap-1.5 text-[#64748B] font-medium">
+                <Hash className="w-3.5 h-3.5 text-[#B8934A]" /> Build Version
               </span>
-              <span className="font-mono text-neutral-600">{agent.appVersion || 'v2.0.0-phase2'}</span>
+              <span className="font-mono text-[#64748B]">{agent.appVersion || 'v2.0.0-phase2'}</span>
             </div>
           </div>
         </div>
+
+        {/* Enterprise Workspace Decks */}
+        {onNavigateTab && (
+          <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-xs p-3.5 space-y-2.5 text-left">
+            <span className="text-[10px] font-bold text-[#8C6B24] uppercase tracking-wider block">
+              Enterprise Role Workspaces:
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onNavigateTab('coordinator')}
+                className="p-2.5 bg-[#F9FAFB] hover:bg-[#FAF6EE] border border-[#E5E7EB] hover:border-[#B8934A] rounded-xl text-left transition-all cursor-pointer"
+              >
+                <div className="text-xs font-bold text-[#111827]">Coordinator Deck</div>
+                <div className="text-[10px] text-[#6B7280]">Dispatch & Ingestion</div>
+              </button>
+              <button
+                onClick={() => onNavigateTab('executive')}
+                className="p-2.5 bg-[#F9FAFB] hover:bg-[#FAF6EE] border border-[#E5E7EB] hover:border-[#B8934A] rounded-xl text-left transition-all cursor-pointer"
+              >
+                <div className="text-xs font-bold text-[#111827]">Executive HQ</div>
+                <div className="text-[10px] text-[#6B7280]">Macro Valuation & KPIs</div>
+              </button>
+              <button
+                onClick={() => onNavigateTab('it_console')}
+                className="p-2.5 bg-[#F9FAFB] hover:bg-[#FAF6EE] border border-[#E5E7EB] hover:border-[#B8934A] rounded-xl text-left transition-all cursor-pointer"
+              >
+                <div className="text-xs font-bold text-[#111827]">IT Console</div>
+                <div className="text-[10px] text-[#6B7280]">Telephony Bridge & Sync</div>
+              </button>
+              <button
+                onClick={() => onNavigateTab('dashboard')}
+                className="p-2.5 bg-[#F9FAFB] hover:bg-[#FAF6EE] border border-[#E5E7EB] hover:border-[#B8934A] rounded-xl text-left transition-all cursor-pointer"
+              >
+                <div className="text-xs font-bold text-[#111827]">Sales Agent</div>
+                <div className="text-[10px] text-[#6B7280]">Calling Cockpit</div>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Kotlin & Architecture Inspection Banner */}
         {onOpenKotlinViewer && (
           <div
             onClick={onOpenKotlinViewer}
-            className="bg-neutral-900 text-white p-3.5 rounded-xl border border-neutral-800 shadow-xs cursor-pointer hover:bg-neutral-800 transition-all flex items-center justify-between"
+            className="bg-white text-[#0F172A] p-3.5 rounded-2xl border border-[#E5E7EB] shadow-xs cursor-pointer hover:border-[#B8934A] transition-all flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-emerald-600/30 text-emerald-400 flex items-center justify-center shrink-0">
-                <FileCode2 className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-[#FAF6EE] text-[#8C6B24] border border-[#E8DFCF] flex items-center justify-center shrink-0">
+                <FileCode2 className="w-5 h-5 text-[#B8934A]" />
               </div>
               <div>
-                <span className="text-xs font-bold block">Android Jetpack Compose Code</span>
-                <span className="text-[11px] text-neutral-400 block">
+                <span className="text-xs font-bold block text-[#0F172A] group-hover:text-[#8C6B24] transition-colors">
+                  Android Jetpack Compose Code
+                </span>
+                <span className="text-[11px] text-[#64748B] block">
                   Inspect Kotlin MVVM, ViewModel & Repository architecture
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-neutral-400" />
+            <ChevronRight className="w-4 h-4 text-[#8C6B24] group-hover:translate-x-0.5 transition-transform" />
           </div>
         )}
 
         {/* Settings & Info Links */}
-        <div className="bg-white rounded-xl border border-neutral-200/90 shadow-2xs divide-y divide-neutral-100 text-xs">
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-xs divide-y divide-[#F1F5F9] text-xs">
           <button
             onClick={() => setShowAbout(true)}
-            className="w-full p-3.5 flex items-center justify-between text-neutral-800 hover:bg-neutral-50 transition-colors text-left"
+            className="w-full p-3.5 flex items-center justify-between text-[#334155] hover:bg-[#F8FAFC] transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
-              <Info className="w-4 h-4 text-neutral-500" />
-              <span className="font-medium">About Winstone Agent</span>
+              <Info className="w-4 h-4 text-[#8C6B24]" />
+              <span className="font-medium text-[#0F172A]">About Winstone Agent</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-neutral-400" />
+            <ChevronRight className="w-4 h-4 text-[#94A3B8]" />
           </button>
 
           <button
             onClick={() => setShowHelp(true)}
-            className="w-full p-3.5 flex items-center justify-between text-neutral-800 hover:bg-neutral-50 transition-colors text-left"
+            className="w-full p-3.5 flex items-center justify-between text-[#334155] hover:bg-[#F8FAFC] transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
-              <HelpCircle className="w-4 h-4 text-neutral-500" />
-              <span className="font-medium">Agent Help & Operational Protocol</span>
+              <HelpCircle className="w-4 h-4 text-[#8C6B24]" />
+              <span className="font-medium text-[#0F172A]">Agent Help & Operational Protocol</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-neutral-400" />
+            <ChevronRight className="w-4 h-4 text-[#94A3B8]" />
           </button>
 
           {/* Logout Action */}
           <button
             id="profile-btn-logout"
             onClick={onLogout}
-            className="w-full p-3.5 flex items-center justify-between text-red-600 hover:bg-red-50 transition-colors text-left font-semibold cursor-pointer"
+            className="w-full p-3.5 flex items-center justify-between text-rose-600 hover:bg-rose-50 transition-colors text-left font-semibold cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
-              <LogOut className="w-4 h-4 text-red-600" />
+              <LogOut className="w-4 h-4 text-rose-600" />
               <span>Log Out of Session</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-red-400" />
+            <ChevronRight className="w-4 h-4 text-rose-400" />
           </button>
         </div>
 
         {/* Corporate Footer */}
-        <div className="text-center text-neutral-400 text-[11px] py-2 space-y-0.5">
-          <p className="font-semibold text-neutral-600">Winstone Properties Ltd.</p>
-          <p>Confidential Internal Tool for Certified Real Estate Sales Force</p>
-          <p className="font-mono text-[10px]">Device ID: SIM-PIXEL-BD-880 • CRM Bridge v2</p>
+        <div className="text-center text-[#64748B] text-[11px] py-4 space-y-2 flex flex-col items-center">
+          <WinstoneLogo variant="horizontal" size="sm" />
+          <p className="text-[10px] text-[#64748B]">Internal Telephony & CRM Suite v2</p>
+          <p className="font-mono text-[9px] text-[#94A3B8]">Device ID: SIM-PIXEL-BD-880 • TLS 1.3 Certified</p>
+          <div className="pt-2 text-[10px] space-y-0.5 border-t border-[#E5E7EB] w-full max-w-xs">
+            <p className="font-medium text-[#64748B]">© 2026 TrendFlux Digital. All Rights Reserved.</p>
+            <p className="font-semibold text-[#8C6B24]">Developed & Powered by Zahid Hasan Emon.</p>
+          </div>
         </div>
       </div>
 
       {/* About Modal */}
       {showAbout && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-5 max-w-sm w-full border border-neutral-200 shadow-xl space-y-3">
-            <h3 className="text-base font-bold text-neutral-900">About Winstone Agent</h3>
-            <p className="text-xs text-neutral-600 leading-relaxed">
-              Winstone Agent is the official mobile sales engagement tool for Winstone Properties Ltd. Built for rapid lead ingestion, qualification (Temperature & Category A/B/C/D), structured follow-up execution, and upcoming native telephony logging.
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
+          <div className="bg-white text-[#0F172A] rounded-2xl p-5 max-w-sm w-full border border-[#E5E7EB] shadow-xl space-y-3 flex flex-col items-center text-center">
+            <WinstoneLogo variant="horizontal" size="md" className="mb-1" />
+            <h3 className="text-base font-bold text-[#0F172A]">About Winstone Agent</h3>
+            <p className="text-xs text-[#475569] leading-relaxed text-left">
+              Winstone Agent is the official mobile sales engagement tool for Winstone Properties Ltd. Built for rapid lead ingestion, qualification (Temperature & Category A/B/C/D), structured follow-up execution, and synchronized CRM gateway persistence.
             </p>
-            <div className="bg-neutral-50 p-2.5 rounded-lg border border-neutral-200 text-[11px] text-neutral-500 space-y-1">
+            <div className="bg-[#FAF9F6] p-3 rounded-xl border border-[#E8DFCF] text-[11px] text-[#8C6B24] space-y-1 w-full text-left">
               <div>Version: v2.0.0-phase2 (CRM Integration Layer)</div>
               <div>Platform: Android Jetpack Compose Native</div>
-              <div>Target Architecture: Clean Architecture + WorkManager Offline Sync</div>
+              <div>Target Architecture: Clean Architecture + Room Offline Sync</div>
+              <div className="pt-1.5 border-t border-[#E8DFCF]/60 text-[10px] text-[#475569]">
+                <div>© 2026 TrendFlux Digital. All Rights Reserved.</div>
+                <div className="font-semibold text-[#8C6B24]">Developed & Powered by Zahid Hasan Emon.</div>
+              </div>
             </div>
             <button
               onClick={() => setShowAbout(false)}
-              className="w-full py-2 bg-neutral-900 text-white rounded-xl text-xs font-bold cursor-pointer"
+              className="w-full py-2.5 bg-[#111827] hover:bg-[#1F2937] text-white rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs active:scale-95"
             >
               Close
             </button>
@@ -200,20 +229,20 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
       {/* Help Modal */}
       {showHelp && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-5 max-w-sm w-full border border-neutral-200 shadow-xl space-y-3">
-            <h3 className="text-base font-bold text-neutral-900">Agent Help & Support</h3>
-            <p className="text-xs text-neutral-600">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
+          <div className="bg-white text-[#0F172A] rounded-2xl p-5 max-w-sm w-full border border-[#E5E7EB] shadow-xl space-y-3">
+            <h3 className="text-base font-bold text-[#0F172A]">Agent Help & Support</h3>
+            <p className="text-xs text-[#475569]">
               For assistance with lead assignment, credential resets, or project brochures:
             </p>
-            <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-200 text-xs space-y-1.5 text-neutral-700">
-              <div><strong>CRM Support Desk:</strong> Ext. 404 / 405</div>
-              <div><strong>Email:</strong> support@winstoneproperties.com</div>
-              <div><strong>Sales Operations:</strong> Gulshan Head Office, Level 9</div>
+            <div className="bg-[#FAF9F6] p-3 rounded-xl border border-[#E8DFCF] text-xs space-y-1.5 text-[#334155]">
+              <div><strong className="text-[#8C6B24]">CRM Support Desk:</strong> Ext. 404 / 405</div>
+              <div><strong className="text-[#8C6B24]">Email:</strong> support@winstoneproperties.com</div>
+              <div><strong className="text-[#8C6B24]">Sales Operations:</strong> Gulshan Head Office, Level 9</div>
             </div>
             <button
               onClick={() => setShowHelp(false)}
-              className="w-full py-2 bg-[#0D6E44] text-white rounded-xl text-xs font-bold cursor-pointer"
+              className="w-full py-2 bg-[#B8934A] hover:bg-[#A68035] text-white rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs active:scale-95"
             >
               Got It
             </button>

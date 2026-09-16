@@ -33,6 +33,9 @@ import { FollowUpsScreen } from './components/FollowUpsScreen';
 import { PerformanceScreen } from './components/PerformanceScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { LoginScreen } from './components/LoginScreen';
+import { CoordinatorDeckScreen } from './components/CoordinatorDeckScreen';
+import { ExecutiveHqScreen } from './components/ExecutiveHqScreen';
+import { ItConsoleScreen } from './components/ItConsoleScreen';
 import {
   AddNoteModal,
   ScheduleFollowUpModal,
@@ -103,18 +106,6 @@ export default function App() {
           setSession(restored);
           setAgent(restored.agent);
           await loadRepositoryData();
-        } else {
-          // If no restored session exists, initialize with verified local Room agent profile
-          const localAgent = winstoneRoomDb.getAgent();
-          if (localAgent) {
-            const initialSession: AuthSession = {
-              accessToken: 'dev_mock_device_token_v3',
-              agent: localAgent,
-            };
-            setSession(initialSession);
-            setAgent(localAgent);
-            await loadRepositoryData();
-          }
         }
       } catch (err: any) {
         console.warn('[initApp] Initialization note:', err);
@@ -762,10 +753,10 @@ export default function App() {
     >
       {/* Toast Notification Banner */}
       {toastMessage && (
-        <div className="absolute top-12 inset-x-3 z-50 bg-neutral-900 text-white text-xs px-3.5 py-2.5 rounded-xl shadow-xl border border-neutral-700 flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-12 inset-x-3 z-50 bg-[#121216] text-white text-xs px-3.5 py-2.5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] border border-[#D4AF37]/40 flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center gap-2">
-            <BellRing className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="font-medium text-[11px]">{toastMessage}</span>
+            <BellRing className="w-4 h-4 text-[#D4AF37] shrink-0" />
+            <span className="font-medium text-[11px] text-[#DFCCA0]">{toastMessage}</span>
           </div>
           <button
             onClick={() => setToastMessage(null)}
@@ -789,28 +780,31 @@ export default function App() {
         <CallScreen lead={activeCallLead} onEndCall={handleEndCall} />
       ) : (
         /* Regular Application Screen Structure */
-        <div className="flex-1 flex flex-col overflow-hidden relative">
+        <div className="flex-1 flex flex-col overflow-hidden relative bg-[#0A0A0C]">
           {/* Header Bar */}
           <HeaderBar
             currentTab={currentTab}
             isDetailView={selectedLead !== null}
             onBackToTabs={() => setSelectedLead(null)}
-            title={selectedLead ? selectedLead.customerName : undefined}
             subtitle={selectedLead ? selectedLead.project : undefined}
             onOpenSyncMonitor={() => setShowSyncMonitor(true)}
             syncStatus={syncStatus}
             agent={agent}
+            onSwitchDeck={(deck) => {
+              setSelectedLead(null);
+              setCurrentTab(deck);
+            }}
           />
 
           {/* Pending Report Banner in Room Database (Prevents overlapping calls) */}
           {pendingReport && (
             <div
               id="pending-report-banner"
-              className="bg-amber-500 text-neutral-950 px-4 py-2 flex items-center justify-between text-xs font-semibold shadow-xs shrink-0 border-b border-amber-600 animate-in fade-in"
+              className="bg-[#1C180E] text-[#DFCCA0] px-4 py-2 flex items-center justify-between text-xs font-semibold shadow-xs shrink-0 border-b border-[#D4AF37]/40 animate-in fade-in"
             >
               <div className="flex items-center gap-2 truncate">
-                <AlertTriangle className="w-4 h-4 text-neutral-900 shrink-0" />
-                <span className="truncate">
+                <AlertTriangle className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                <span className="truncate text-white">
                   Unsubmitted Call Report in Room (Duration: {pendingReport.duration_seconds}s)
                 </span>
               </div>
@@ -825,7 +819,7 @@ export default function App() {
                       initialNotes: '',
                     });
                   }}
-                  className="bg-neutral-900 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="bg-[#D4AF37] hover:bg-[#C49F27] text-neutral-950 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer shadow-xs"
                 >
                   Resume Report
                 </button>
@@ -834,7 +828,7 @@ export default function App() {
                     winstoneRoomDb.clearPendingReport();
                     showToast('Pending report buffer cleared from Room.');
                   }}
-                  className="text-neutral-900/70 hover:text-neutral-950 text-[11px] underline ml-1 cursor-pointer"
+                  className="text-[#8E8E98] hover:text-white text-[11px] underline ml-1 cursor-pointer"
                 >
                   Clear
                 </button>
@@ -898,7 +892,23 @@ export default function App() {
                     agent={agent}
                     onLogout={handleLogout}
                     onOpenKotlinViewer={() => setShowKotlinViewer(true)}
+                    onNavigateTab={(tab) => setCurrentTab(tab as any)}
                   />
+                )}
+
+                {currentTab === 'coordinator' && (
+                  <CoordinatorDeckScreen
+                    leads={leads}
+                    onSelectLead={handleSelectLead}
+                  />
+                )}
+
+                {currentTab === 'executive' && (
+                  <ExecutiveHqScreen leads={leads} />
+                )}
+
+                {currentTab === 'it_console' && (
+                  <ItConsoleScreen />
                 )}
               </>
             )}

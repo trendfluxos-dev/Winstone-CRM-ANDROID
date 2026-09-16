@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
-import { Building2, Lock, Mail, ArrowRight, ShieldCheck, AlertCircle, Users, Phone, Hash } from 'lucide-react';
+import {
+  Lock,
+  ArrowRight,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  User,
+  ShieldCheck,
+  Globe,
+  ChevronDown,
+  Building2,
+  Users2,
+  TrendingUp,
+  Sparkles,
+  Check,
+} from 'lucide-react';
 import { LoginCredentials } from '../types';
-import { VERIFIED_WINSTONE_AGENTS, resolveAgentByIdentifier } from '../config/agentRegistry';
+import { WinstoneLogo } from './WinstoneLogo';
 
 interface LoginScreenProps {
   onLogin: (credentials: LoginCredentials) => Promise<void>;
@@ -14,11 +29,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLogin,
   isLoading,
   errorMessage,
-  isMockMode,
 }) => {
   const [identifier, setIdentifier] = useState('WIN2601');
-  const [password, setPassword] = useState('••••••••••••');
-  const [selectedAgentIndex, setSelectedAgentIndex] = useState<number>(0);
+  const [password, setPassword] = useState('Winstone@2026!');
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<'English' | 'বাংলা'>('English');
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const [selectedRolePreset, setSelectedRolePreset] = useState<string>('WIN2601');
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+
+  const rolePresets = [
+    { id: 'WIN2601', title: 'Sales Agent', name: 'Tanvir Ahmed', subtitle: 'Gulshan & Banani Prime' },
+    { id: 'WIN2602', title: 'Coordinator Deck', name: 'Nusrat Jahan', subtitle: 'Lead Dispatch & Influx' },
+    { id: 'WIN2603', title: 'Executive HQ', name: 'Mahmudul Hasan', subtitle: 'VP Commercial & Macro KPIs' },
+    { id: 'WIN2604', title: 'IT Console', name: 'Farzana Rahman', subtitle: 'Telephony & Bridge Admin' },
+  ];
+
+  const handleSelectRole = (empId: string) => {
+    setSelectedRolePreset(empId);
+    setIdentifier(empId);
+    setPassword('Winstone@2026!');
+    setShowRoleSelector(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,148 +58,306 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     await onLogin({ identifier: identifier.trim(), password });
   };
 
-  const handleSelectAgent = (index: number) => {
-    setSelectedAgentIndex(index);
-    const agent = VERIFIED_WINSTONE_AGENTS[index];
-    if (agent) {
-      setIdentifier(agent.employeeId);
-      setPassword('Winstone@2026!');
-    }
-  };
-
-  const detected = resolveAgentByIdentifier(identifier);
-
   return (
-    <div id="login-screen" className="flex-1 flex flex-col bg-neutral-900 text-white p-5 justify-center overflow-y-auto">
-      {/* Brand Header */}
-      <div className="text-center space-y-1.5 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-[#0D6E44] flex items-center justify-center text-white mx-auto shadow-lg shadow-emerald-950/50 ring-1 ring-emerald-400/30">
-          <Building2 className="w-6 h-6" />
-        </div>
-        <h1 className="text-lg font-extrabold tracking-tight text-white">Winstone Agent Portal</h1>
-        <p className="text-[11px] text-neutral-400 max-w-xs mx-auto">
-          Winstone Properties Ltd. Unified Telephony & CRM
-        </p>
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-neutral-800 text-[10px] text-emerald-400 font-mono border border-neutral-700">
-          <ShieldCheck className="w-3 h-3" />
-          <span>7 Verified Accounts Active</span>
-        </div>
+    <div
+      id="login-screen"
+      className="flex-1 flex flex-col justify-between text-[#111827] px-5 sm:px-6 py-4 overflow-y-auto no-scrollbar relative selection:bg-[#FAF0DB] selection:text-[#8C6B24] bg-[#F9FAFB]"
+    >
+      {/* Real Estate Luxury Architectural Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Soft luxury architectural building illustration overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-white/95 z-1" />
+        
+        {/* Architectural backdrop elements */}
+        <div
+          className="absolute inset-0 opacity-25 mix-blend-multiply bg-cover bg-center"
+          style={{
+            backgroundImage: `url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80")`,
+          }}
+        />
+
+        {/* Top-Left Champagne Gold Wave Flourishes (matching screenshot) */}
+        <svg
+          className="absolute -top-10 -left-10 w-72 h-72 opacity-60 z-2"
+          viewBox="0 0 200 200"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M-20 20C40 20 80 60 100 120C120 180 180 200 220 200"
+            stroke="url(#goldCurveGrad1)"
+            strokeWidth="2.5"
+          />
+          <path
+            d="M-20 60C30 60 60 90 80 150C95 190 140 210 180 210"
+            stroke="url(#goldCurveGrad2)"
+            strokeWidth="1.5"
+            strokeDasharray="4 2"
+          />
+          <defs>
+            <linearGradient id="goldCurveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#CFA349" />
+              <stop offset="50%" stopColor="#E9CE88" />
+              <stop offset="100%" stopColor="#8C6B24" />
+            </linearGradient>
+            <linearGradient id="goldCurveGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FAF0DB" />
+              <stop offset="100%" stopColor="#CFA349" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
 
-      {/* Error Banner */}
-      {errorMessage && (
-        <div className="mb-4 bg-red-950/60 border border-red-800/80 rounded-xl p-3 text-red-200 text-xs flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold block">Authentication Failed</span>
-            <span>{errorMessage}</span>
-          </div>
-        </div>
-      )}
+      {/* Foreground Content */}
+      <div className="relative z-10 flex flex-col justify-between flex-1">
+        {/* Top Action Bar: Language Selector */}
+        <div className="flex items-center justify-between mb-2">
+          {/* Workspace Quick Switcher Pill */}
+          <button
+            type="button"
+            onClick={() => setShowRoleSelector(!showRoleSelector)}
+            className="flex items-center gap-1.5 px-3 py-1 bg-white/90 hover:bg-white text-[#8C6B24] rounded-full text-[11px] font-bold border border-[#E8DFCF] shadow-2xs transition-all cursor-pointer"
+          >
+            <Sparkles className="w-3 h-3 text-[#B8934A]" />
+            <span>Deck: {rolePresets.find((r) => r.id === selectedRolePreset)?.title || 'Sales Agent'}</span>
+            <ChevronDown className="w-3 h-3 text-[#8C6B24]" />
+          </button>
 
-      {/* Login Form */}
-      <form onSubmit={handleSubmit} className="space-y-3.5 max-w-sm w-full mx-auto">
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-[11px] font-semibold text-neutral-300 block">
-              Employee ID / Email / Phone
-            </label>
-            {detected && (
-              <span className="text-[10px] text-emerald-400 font-medium truncate max-w-[150px]">
-                ✓ {detected.name} ({detected.employeeId})
-              </span>
-            )}
-          </div>
+          {/* Language Selector (matching screenshot) */}
           <div className="relative">
-            <Hash className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              id="login-identifier-input"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="e.g. WIN2601, win2601@agent.winstonebd.com, 01805049668"
-              className="w-full bg-neutral-800/90 border border-neutral-700 focus:border-[#0D6E44] focus:ring-2 focus:ring-[#0D6E44]/20 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder:text-neutral-500 transition-all outline-none"
-              required
-            />
-          </div>
-          <p className="text-[10px] text-neutral-500">
-            Accepts Employee ID (WIN2601), Agent Email, or registered BD phone.
-          </p>
-        </div>
+            <button
+              type="button"
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white/90 hover:bg-white text-[#374151] rounded-full text-xs font-semibold border border-[#E5E7EB] shadow-2xs transition-all cursor-pointer"
+            >
+              <Globe className="w-3.5 h-3.5 text-[#6B7280]" />
+              <span>{selectedLanguage}</span>
+              <ChevronDown className="w-3 h-3 text-[#6B7280]" />
+            </button>
 
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold text-neutral-300 block">Password</label>
-          <div className="relative">
-            <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="password"
-              id="login-password-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="w-full bg-neutral-800/90 border border-neutral-700 focus:border-[#0D6E44] focus:ring-2 focus:ring-[#0D6E44]/20 rounded-xl py-2.5 pl-10 pr-3 text-xs text-white placeholder:text-neutral-500 transition-all outline-none font-mono"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          id="login-submit-btn"
-          disabled={isLoading}
-          className="w-full bg-[#0D6E44] hover:bg-[#0A5735] active:scale-98 disabled:opacity-50 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all cursor-pointer mt-1"
-        >
-          {isLoading ? (
-            <span>Connecting to CRM Gateway...</span>
-          ) : (
-            <>
-              <span>Sign In with Single ID</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
-
-        {/* 7 Verified Agent Accounts Selector */}
-        <div className="pt-3 border-t border-neutral-800 space-y-2">
-          <div className="flex items-center justify-between text-[11px] text-neutral-400">
-            <span className="flex items-center gap-1 font-medium">
-              <Users className="w-3.5 h-3.5 text-emerald-400" />
-              Verified Agent Roster (7 Accounts)
-            </span>
-            <span className="text-[10px] text-neutral-500">Click to load</span>
-          </div>
-
-          <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
-            {VERIFIED_WINSTONE_AGENTS.map((agent, idx) => {
-              const isSelected = identifier.toUpperCase().includes(agent.employeeId);
-              return (
+            {showLangMenu && (
+              <div className="absolute right-0 top-8 bg-white border border-[#E5E7EB] rounded-xl shadow-lg p-1 w-28 z-50 text-xs text-left">
                 <button
-                  key={agent.employeeId}
                   type="button"
-                  onClick={() => handleSelectAgent(idx)}
-                  className={`text-left p-1.5 rounded-lg border text-[11px] transition-all flex items-center justify-between ${
-                    isSelected
-                      ? 'bg-emerald-950/60 border-emerald-600/80 text-emerald-200'
-                      : 'bg-neutral-800/70 border-neutral-700/60 hover:bg-neutral-800 text-neutral-300'
+                  onClick={() => {
+                    setSelectedLanguage('English');
+                    setShowLangMenu(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between ${
+                    selectedLanguage === 'English' ? 'bg-[#FAF6EE] text-[#8C6B24] font-bold' : 'text-[#374151]'
                   }`}
                 >
-                  <div className="min-w-0 pr-2">
-                    <span className="font-semibold block truncate">
-                      {agent.name} <span className="text-[10px] text-emerald-400 font-mono">({agent.employeeId})</span>
-                    </span>
-                    <span className="text-[10px] text-neutral-400 truncate block">
-                      {agent.phone} • {agent.territory}
-                    </span>
-                  </div>
-                  <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded bg-neutral-900 border border-neutral-700 font-mono text-neutral-300">
-                    ID #{idx + 1}
-                  </span>
+                  <span>English</span>
+                  {selectedLanguage === 'English' && <Check className="w-3 h-3 text-[#8C6B24]" />}
                 </button>
-              );
-            })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedLanguage('বাংলা');
+                    setShowLangMenu(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between ${
+                    selectedLanguage === 'বাংলা' ? 'bg-[#FAF6EE] text-[#8C6B24] font-bold' : 'text-[#374151]'
+                  }`}
+                >
+                  <span>বাংলা</span>
+                  {selectedLanguage === 'বাংলা' && <Check className="w-3 h-3 text-[#8C6B24]" />}
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </form>
+
+        {/* Role Selector Popup if toggled */}
+        {showRoleSelector && (
+          <div className="mb-3 bg-white p-3 rounded-2xl border border-[#E8DFCF] shadow-md space-y-2 text-left animate-in fade-in">
+            <span className="text-[10px] font-bold text-[#8C6B24] uppercase tracking-wider block">
+              Select Workspace Deck (Eligible for 4 Roles):
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {rolePresets.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => handleSelectRole(r.id)}
+                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                    selectedRolePreset === r.id
+                      ? 'bg-[#FAF6EE] border-[#B8934A] text-[#111827]'
+                      : 'bg-[#F9FAFB] border-[#E5E7EB] text-[#4B5563] hover:bg-white'
+                  }`}
+                >
+                  <div className="text-xs font-bold">{r.title}</div>
+                  <div className="text-[10px] text-[#6B7280]">{r.name}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Center Brand Identity (Exact Match) */}
+        <div className="flex flex-col items-center text-center my-2 sm:my-3">
+          <WinstoneLogo variant="stacked" size="md" />
+
+          {/* Typography Headings */}
+          <div className="mt-4 mb-2">
+            <h2 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-[#111827]">
+              Welcome back
+            </h2>
+            <p className="text-xs sm:text-sm font-normal text-[#6B7280] leading-relaxed max-w-xs mx-auto mt-1">
+              Sign in to your agent account to access your lead pipeline and telephony cockpit.
+            </p>
+          </div>
+        </div>
+
+        {/* Elevated White Form Card */}
+        <div className="bg-white/95 backdrop-blur-md rounded-[26px] p-5 sm:p-6 shadow-[0_12px_36px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)] border border-white/80 my-2">
+          {/* Error Banner if any */}
+          {errorMessage && (
+            <div className="mb-4 bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-900 text-xs flex items-start gap-2 text-left">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold block">Sign In Failed</span>
+                <span className="font-medium text-rose-700">{errorMessage}</span>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Employee ID Input */}
+            <div className="space-y-1.5 text-left">
+              <label
+                htmlFor="login-identifier-input"
+                className="text-xs sm:text-sm font-bold text-[#111827] block tracking-tight"
+              >
+                Employee ID, Email or Phone
+              </label>
+              <div className="relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none">
+                  <User className="w-5 h-5 text-[#9CA3AF]" />
+                </div>
+                <input
+                  type="text"
+                  id="login-identifier-input"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="WIN2601"
+                  className="w-full h-12 bg-white border border-[#E5E7EB] focus:border-[#B8934A] focus:ring-2 focus:ring-[#B8934A]/20 rounded-xl pl-11 pr-3 text-sm sm:text-base font-semibold text-[#111827] placeholder:text-[#9CA3AF] transition-all outline-none"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Password Input with Forgot password link */}
+            <div className="space-y-1.5 text-left">
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="login-password-input"
+                  className="text-xs sm:text-sm font-bold text-[#111827] block tracking-tight"
+                >
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setPassword('Winstone@2026!')}
+                  className="text-xs font-semibold text-[#B8934A] hover:underline cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none">
+                  <Lock className="w-5 h-5 text-[#9CA3AF]" />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="login-password-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full h-12 bg-white border border-[#E5E7EB] focus:border-[#B8934A] focus:ring-2 focus:ring-[#B8934A]/20 rounded-xl pl-11 pr-11 text-sm sm:text-base font-semibold text-[#111827] placeholder:text-[#9CA3AF] transition-all outline-none font-mono"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#111827] p-1.5 rounded-lg transition-colors cursor-pointer"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Rich Champagne Gold Gradient Sign In Button */}
+            <button
+              type="submit"
+              id="login-submit-btn"
+              disabled={isLoading}
+              className="w-full h-12.5 bg-gradient-to-b from-[#E2BE70] via-[#CFA349] to-[#B28734] hover:brightness-105 active:scale-[0.98] disabled:opacity-60 text-[#111827] font-black text-base rounded-xl shadow-[0_4px_16px_rgba(184,147,74,0.3)] flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#E5C77D]/40 mt-3"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2 font-bold text-sm">
+                  <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <span>Signing into CRM...</span>
+                </span>
+              ) : (
+                <>
+                  <span className="tracking-tight">Sign In to CRM</span>
+                  <ArrowRight className="w-5 h-5 text-[#111827]" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Security Footnote */}
+          <div className="pt-3 text-center space-y-0.5">
+            <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#4B5563]">
+              <ShieldCheck className="w-4 h-4 text-[#B8934A]" />
+              <span>Secure. Encrypted. Trusted.</span>
+            </div>
+            <p className="text-[10px] text-[#9CA3AF]">
+              Winstone Enterprise Security • TLS 1.3
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Feature Pillars & Cursive Slogan */}
+        <div className="pt-2 pb-1">
+          <div className="grid grid-cols-3 gap-1 text-center py-2 border-t border-[#E5E7EB]/70">
+            <div className="flex flex-col items-center">
+              <Building2 className="w-4 h-4 text-[#B8934A] mb-1" />
+              <span className="text-[10px] font-bold text-[#374151] leading-tight">Luxury</span>
+              <span className="text-[9px] text-[#6B7280]">Properties</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <Users2 className="w-4 h-4 text-[#B8934A] mb-1" />
+              <span className="text-[10px] font-bold text-[#374151] leading-tight">Trusted</span>
+              <span className="text-[9px] text-[#6B7280]">Developer</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <TrendingUp className="w-4 h-4 text-[#B8934A] mb-1" />
+              <span className="text-[10px] font-bold text-[#374151] leading-tight">A Better</span>
+              <span className="text-[9px] text-[#6B7280]">Tomorrow</span>
+            </div>
+          </div>
+
+          {/* Slogan in Elegant Cursive Calligraphy (matching screenshot) */}
+          <div className="text-right pr-2 pt-1">
+            <span
+              className="text-xs sm:text-sm text-[#8C6B24] font-serif italic tracking-wide"
+              style={{ fontFamily: '"Brush Script MT", "Caveat", "Great Vibes", cursive, serif' }}
+            >
+              Building A Brighter Bangladesh
+            </span>
+          </div>
+
+          {/* TrendFlux Digital Attribution */}
+          <div className="pt-2 text-center text-[10px] text-[#9CA3AF] space-y-0.5 border-t border-[#E5E7EB]/50 mt-1">
+            <p className="font-medium text-[#6B7280]">© 2026 TrendFlux Digital. All Rights Reserved.</p>
+            <p className="font-semibold text-[#8C6B24]">Developed & Powered by Zahid Hasan Emon.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
-
