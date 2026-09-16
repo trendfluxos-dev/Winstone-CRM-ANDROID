@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Lock,
   ArrowRight,
@@ -9,12 +9,9 @@ import {
   ShieldCheck,
   Globe,
   ChevronDown,
-  Building2,
-  Users2,
   TrendingUp,
   Sparkles,
   Check,
-  Edit3,
   KeyRound,
   X,
   Phone,
@@ -26,9 +23,9 @@ import {
 import { LoginCredentials, NavTab } from '../types';
 import { WinstoneLogo } from './WinstoneLogo';
 import {
-  getCoordinatorProfiles,
-  saveCoordinatorProfile,
-  CoordinatorProfileItem,
+  VERIFIED_WINSTONE_AGENTS,
+  AUTHORIZED_COORDINATOR_IDS,
+  VerifiedAgentRecord,
 } from '../config/agentRegistry';
 
 interface LoginScreenProps {
@@ -43,7 +40,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   isLoading,
   errorMessage,
 }) => {
-  // Navigation & Role Mode: 'portals' | 'manual'
+  // Navigation Mode: 'portals' | 'manual'
   const [authMode, setAuthMode] = useState<'portals' | 'manual'>('portals');
 
   // Manual Credentials
@@ -55,35 +52,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [selectedLanguage, setSelectedLanguage] = useState<'English' | 'বাংলা'>('English');
   const [showLangMenu, setShowLangMenu] = useState(false);
 
-  // Coordinator Profiles
-  const [coordinators, setCoordinators] = useState<CoordinatorProfileItem[]>([]);
-  const [editingCoordinator, setEditingCoordinator] = useState<CoordinatorProfileItem | null>(null);
+  // Coordinator Profile Confirmation Modal State (Contract Section 5.B)
+  const [selectedCoordinatorProfile, setSelectedCoordinatorProfile] = useState<VerifiedAgentRecord | null>(null);
 
-  // PIN Unlock Modal for Executive HQ & IT Console
+  // PIN Unlock Modal for Executive HQ & IT Console (Contract Section 5.C & 5.D)
   const [pinModalConfig, setPinModalConfig] = useState<{
     isOpen: boolean;
     roleTitle: string;
     roleDescription: string;
-    defaultPin: string;
     targetIdentifier: string;
     targetTab: NavTab;
   } | null>(null);
   const [enteredPin, setEnteredPin] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
-
-  // Load Coordinator Profiles
-  useEffect(() => {
-    setCoordinators(getCoordinatorProfiles());
-  }, []);
-
-  // Save Edited Coordinator
-  const handleSaveCoordinator = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCoordinator) return;
-    const updated = saveCoordinatorProfile(editingCoordinator);
-    setCoordinators(updated);
-    setEditingCoordinator(null);
-  };
 
   // Submit Manual Form
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,19 +81,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     );
   };
 
-  // Quick Sign In for Coordinator Desk
-  const handleSignInAsCoordinator = async (coord: CoordinatorProfileItem) => {
+  // Trigger Coordinator Confirmation Flow (Contract Section 5.B)
+  const handleInitiateCoordinatorSignIn = (empId: string = 'WIN2604') => {
+    const profile = VERIFIED_WINSTONE_AGENTS.find((a) => a.employeeId === empId) || VERIFIED_WINSTONE_AGENTS.find((a) => a.employeeId === 'WIN2604') || null;
+    setSelectedCoordinatorProfile(profile);
+  };
+
+  // Confirm and Enter Coordinator Deck
+  const handleConfirmCoordinatorDeck = async () => {
+    if (!selectedCoordinatorProfile) return;
+    const targetId = selectedCoordinatorProfile.employeeId;
+    setSelectedCoordinatorProfile(null);
     await onLogin(
-      { identifier: coord.employeeId, password: 'Winstone@2026!' },
+      { identifier: targetId, password: 'Winstone@2026!' },
       'coordinator'
     );
   };
 
-  // Open PIN Modal
+  // Open PIN Modal (Only "Unlock PIN" shown on UI)
   const handleOpenPinModal = (
     roleTitle: string,
     roleDescription: string,
-    defaultPin: string,
     targetIdentifier: string,
     targetTab: NavTab
   ) => {
@@ -122,24 +111,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       isOpen: true,
       roleTitle,
       roleDescription,
-      defaultPin,
       targetIdentifier,
       targetTab,
     });
   };
 
-  // Submit PIN
+  // Submit PIN for Verification
   const handleVerifyAndSubmitPin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!pinModalConfig) return;
 
-    if (enteredPin.trim() === pinModalConfig.defaultPin || enteredPin.trim() === '1234') {
-      const targetId = pinModalConfig.targetIdentifier;
-      const targetTab = pinModalConfig.targetTab;
+    // Server-side verification simulation without leaking PINs in UI
+    const targetId = pinModalConfig.targetIdentifier;
+    const targetTab = pinModalConfig.targetTab;
+    const validPins: Record<string, string[]> = {
+      WIN2603: ['8888', '1234'],
+      WIN2604: ['9999', '1234'],
+    };
+
+    const accepted = validPins[targetId] || ['1234', '8888', '9999'];
+
+    if (accepted.includes(enteredPin.trim())) {
       setPinModalConfig(null);
       await onLogin({ identifier: targetId, password: 'Winstone@2026!' }, targetTab);
     } else {
-      setPinError(`Incorrect PIN. (Default authorized security PIN is ${pinModalConfig.defaultPin})`);
+      setPinError('Invalid Security PIN. Please enter authorized 4-digit passcode.');
     }
   };
 
@@ -157,7 +153,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             backgroundImage: `url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80")`,
           }}
         />
-        {/* Top-Left Champagne Gold Wave Flourishes */}
+        {/* Champagne Gold Flourishes */}
         <svg
           className="absolute -top-10 -left-10 w-72 h-72 opacity-60 z-2"
           viewBox="0 0 200 200"
@@ -191,9 +187,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
       {/* Foreground Content */}
       <div className="relative z-10 flex flex-col justify-between flex-1">
-        {/* Top Header: Brand Crest & Language Selector */}
+        {/* Top Header: Mode Pill & Language Selector */}
         <div className="flex items-center justify-between mb-1.5">
-          {/* Mode Switcher Pill */}
+          {/* Mode Switcher */}
           <div className="flex items-center gap-1 bg-white/90 p-0.5 rounded-full border border-[#E5E7EB] shadow-2xs">
             <button
               type="button"
@@ -269,15 +265,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <WinstoneLogo variant="stacked" size="md" />
           <div className="mt-2 mb-1">
             <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#111827]">
-              Winstone Enterprise Sign In
+              Winstone Connect V2
             </h2>
             <p className="text-[11px] sm:text-xs text-[#6B7280] leading-tight mt-0.5">
-              Select your operational deck or sign in with your verified credentials.
+              Unified CRM Authentication • Single Source of Truth
             </p>
           </div>
         </div>
 
-        {/* Global Error Banner */}
+        {/* Global Error Notice */}
         {errorMessage && (
           <div className="mb-2 bg-rose-50 border border-rose-200 rounded-xl p-2.5 text-rose-900 text-xs flex items-start gap-2 text-left">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -288,10 +284,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         )}
 
-        {/* MAIN AUTHENTICATION CARDS: PORTALS VIEW */}
+        {/* FOUR OPERATIONAL ROLES PORTAL VIEW (CONTRACT SECTION 5) */}
         {authMode === 'portals' ? (
           <div className="space-y-2.5 my-1">
-            {/* 1. SALES AGENT PORTAL */}
+            {/* A. SALES AGENT */}
             <div className="bg-white rounded-2xl p-3.5 border border-[#E8DFCF] shadow-xs hover:border-[#B8934A] transition-all text-left">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -303,7 +299,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                       Sales Agent
                     </h3>
                     <p className="text-[11px] text-[#6B7280] leading-snug mt-0.5">
-                      Your own lead queue, call log, WhatsApp threads and AI coaching.
+                      Your own lead queue, call log, WhatsApp threads, AI coaching, and own Daily Performance.
                     </p>
                   </div>
                 </div>
@@ -325,7 +321,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
             </div>
 
-            {/* 2. SIGN IN AS COORDINATOR */}
+            {/* B. SIGN IN AS COORDINATOR (Authorized: WIN2604, WIN2606) */}
             <div className="bg-white rounded-2xl p-3.5 border border-[#E8DFCF] shadow-xs text-left">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -343,53 +339,40 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 </div>
               </div>
 
-              {/* 4 Editable Coordinator Desks */}
-              <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-[#F1F5F9]">
-                {coordinators.map((coord) => (
-                  <div
-                    key={coord.id}
-                    className="p-2.5 rounded-xl border border-[#E5E7EB] hover:border-[#B8934A] bg-[#FAF9F6] hover:bg-white transition-all flex flex-col justify-between group"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="min-w-0 pr-1">
-                        <span className="text-[10px] font-bold text-[#8C6B24] uppercase tracking-wider block">
-                          {coord.title}
-                        </span>
-                        <div className="text-xs font-bold text-[#111827] truncate mt-0.5">
-                          {coord.name}
-                        </div>
-                      </div>
-
-                      {/* EDIT Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingCoordinator({ ...coord });
-                        }}
-                        className="px-1.5 py-0.5 bg-white hover:bg-[#FAF6EE] border border-[#E8DFCF] text-[9.5px] font-extrabold text-[#8C6B24] rounded-md flex items-center gap-0.5 shrink-0 cursor-pointer shadow-2xs hover:scale-105 transition-transform"
-                        title={`Edit ${coord.title} profile details`}
-                      >
-                        <Edit3 className="w-2.5 h-2.5 text-[#B8934A]" />
-                        <span>EDIT</span>
-                      </button>
-                    </div>
-
+              <div className="mt-2.5 pt-2 border-t border-[#F1F5F9] flex items-center justify-between">
+                <div className="flex items-center gap-2 text-[10.5px] text-[#475569]">
+                  <span className="font-bold text-[#111827]">Authorized Accounts:</span>
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => handleSignInAsCoordinator(coord)}
-                      disabled={isLoading}
-                      className="mt-2 w-full py-1 bg-white hover:bg-[#FAF6EE] border border-[#E5E7EB] hover:border-[#B8934A] text-[#111827] text-[10.5px] font-bold rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                      onClick={() => handleInitiateCoordinatorSignIn('WIN2604')}
+                      className="px-1.5 py-0.5 bg-[#FAF6EE] border border-[#E8DFCF] text-[#8C6B24] font-mono font-bold rounded hover:bg-[#F3ECE0] cursor-pointer"
                     >
-                      <span>Sign In</span>
-                      <ArrowRight className="w-3 h-3 text-[#8C6B24]" />
+                      WIN2604
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInitiateCoordinatorSignIn('WIN2606')}
+                      className="px-1.5 py-0.5 bg-[#FAF6EE] border border-[#E8DFCF] text-[#8C6B24] font-mono font-bold rounded hover:bg-[#F3ECE0] cursor-pointer"
+                    >
+                      WIN2606
                     </button>
                   </div>
-                ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleInitiateCoordinatorSignIn('WIN2604')}
+                  disabled={isLoading}
+                  className="px-3.5 py-1.5 bg-[#111827] hover:bg-[#1F2937] active:scale-95 text-[#FAF0DB] font-extrabold text-xs rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <span>Sign In</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#E9CE88]" />
+                </button>
               </div>
             </div>
 
-            {/* 3. SIGN IN AS EXECUTIVE HQ */}
+            {/* C. SIGN IN AS EXECUTIVE HQ */}
             <div className="bg-white rounded-2xl p-3.5 border border-[#E8DFCF] shadow-xs text-left">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -409,7 +392,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
               <div className="mt-2.5 pt-2 border-t border-[#F1F5F9] flex items-center justify-between">
                 <div className="text-[10.5px] text-[#475569]">
-                  <span className="font-bold text-[#111827]">Executive HQ</span> • Commercial VP
+                  <span className="font-bold text-[#111827]">Executive HQ</span> • Read-Only Floor View
                 </div>
                 <button
                   type="button"
@@ -417,7 +400,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     handleOpenPinModal(
                       'Executive HQ Deck',
                       'Access floor valuation metrics, real-time consultant leaderboards, and macro KPI forecasts.',
-                      '8888',
                       'WIN2603',
                       'executive'
                     )
@@ -430,7 +412,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
             </div>
 
-            {/* 4. SIGN IN AS IT CONSOLE */}
+            {/* D. SIGN IN AS IT CONSOLE */}
             <div className="bg-white rounded-2xl p-3.5 border border-[#E8DFCF] shadow-xs text-left">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -458,7 +440,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     handleOpenPinModal(
                       'IT Console & Bridge',
                       'Configure Android telephony bridge gateways, Room DB schemas, and TLS 1.3 token rotations.',
-                      '9999',
                       'WIN2604',
                       'it_console'
                     )
@@ -478,23 +459,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               {/* Employee ID Input */}
               <div className="space-y-1.5 text-left">
                 <label
-                  htmlFor="login-identifier-input"
-                  className="text-xs sm:text-sm font-bold text-[#111827] block tracking-tight"
+                  htmlFor="employee-id"
+                  className="block text-xs font-bold text-[#111827] uppercase tracking-wider"
                 >
-                  Employee ID, Email or Phone
+                  Agent Identifier / Employee ID
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none">
-                    <User className="w-5 h-5 text-[#9CA3AF]" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <User className="h-4 w-4 text-[#9CA3AF]" />
                   </div>
                   <input
+                    id="employee-id"
                     type="text"
-                    id="login-identifier-input"
+                    required
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="WIN2601 or COORD001"
-                    className="w-full h-12 bg-white border border-[#E5E7EB] focus:border-[#B8934A] focus:ring-2 focus:ring-[#B8934A]/20 rounded-xl pl-11 pr-3 text-sm sm:text-base font-semibold text-[#111827] placeholder:text-[#9CA3AF] transition-all outline-none"
-                    required
+                    placeholder="e.g. WIN2601, WIN2604, email or phone"
+                    className="block w-full pl-10 pr-3.5 py-3 text-sm font-semibold bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#8C6B24] focus:border-[#8C6B24] focus:bg-white transition-all shadow-inner"
                   />
                 </div>
               </div>
@@ -503,59 +484,50 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="space-y-1.5 text-left">
                 <div className="flex items-center justify-between">
                   <label
-                    htmlFor="login-password-input"
-                    className="text-xs sm:text-sm font-bold text-[#111827] block tracking-tight"
+                    htmlFor="password"
+                    className="block text-xs font-bold text-[#111827] uppercase tracking-wider"
                   >
-                    Password
+                    Account Password
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setPassword('Winstone@2026!')}
-                    className="text-xs font-semibold text-[#B8934A] hover:underline cursor-pointer"
-                  >
-                    Forgot password?
-                  </button>
                 </div>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none">
-                    <Lock className="w-5 h-5 text-[#9CA3AF]" />
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Lock className="h-4 w-4 text-[#9CA3AF]" />
                   </div>
                   <input
+                    id="password"
                     type={showPassword ? 'text' : 'password'}
-                    id="login-password-input"
+                    required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full h-12 bg-white border border-[#E5E7EB] focus:border-[#B8934A] focus:ring-2 focus:ring-[#B8934A]/20 rounded-xl pl-11 pr-11 text-sm sm:text-base font-semibold text-[#111827] placeholder:text-[#9CA3AF] transition-all outline-none font-mono"
-                    required
+                    className="block w-full pl-10 pr-10 py-3 text-sm font-semibold bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#8C6B24] focus:border-[#8C6B24] focus:bg-white transition-all shadow-inner"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#111827] p-1.5 rounded-lg transition-colors cursor-pointer"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#9CA3AF] hover:text-[#111827] transition-colors cursor-pointer"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* Rich Champagne Gold Gradient Sign In Button */}
+              {/* Submit Button */}
               <button
                 type="submit"
-                id="login-submit-btn"
                 disabled={isLoading}
-                className="w-full h-12.5 bg-gradient-to-b from-[#E2BE70] via-[#CFA349] to-[#B28734] hover:brightness-105 active:scale-[0.98] disabled:opacity-60 text-[#111827] font-black text-base rounded-xl shadow-[0_4px_16px_rgba(184,147,74,0.3)] flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#E5C77D]/40 mt-3"
+                className="w-full mt-2 py-3.5 px-4 bg-gradient-to-r from-[#CFA349] via-[#E9CE88] to-[#8C6B24] hover:opacity-95 text-[#111827] text-sm font-extrabold rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8C6B24] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] disabled:opacity-50"
               >
                 {isLoading ? (
-                  <span className="flex items-center gap-2 font-bold text-sm">
-                    <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                    <span>Signing into CRM...</span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-[#111827] border-t-transparent rounded-full animate-spin" />
+                    <span>Verifying CRM Credentials...</span>
                   </span>
                 ) : (
                   <>
-                    <span className="tracking-tight">Sign In to CRM</span>
-                    <ArrowRight className="w-5 h-5 text-[#111827]" />
+                    <span>Authenticate & Launch Deck</span>
+                    <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </button>
@@ -563,39 +535,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         )}
 
-        {/* Security Footnote */}
-        <div className="pt-2 text-center space-y-0.5">
-          <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#4B5563]">
-            <ShieldCheck className="w-4 h-4 text-[#B8934A]" />
-            <span>Secure. Encrypted. Trusted.</span>
-          </div>
-          <p className="text-[10px] text-[#9CA3AF]">
-            Winstone Enterprise Security • TLS 1.3
-          </p>
-        </div>
-
-        {/* Bottom Feature Pillars & Cursive Slogan */}
-        <div className="pt-2 pb-1">
-          <div className="grid grid-cols-3 gap-1 text-center py-2 border-t border-[#E5E7EB]/70">
-            <div className="flex flex-col items-center">
-              <Building2 className="w-4 h-4 text-[#B8934A] mb-1" />
-              <span className="text-[10px] font-bold text-[#374151] leading-tight">Luxury</span>
-              <span className="text-[9px] text-[#6B7280]">Properties</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <Users2 className="w-4 h-4 text-[#B8934A] mb-1" />
-              <span className="text-[10px] font-bold text-[#374151] leading-tight">Trusted</span>
-              <span className="text-[9px] text-[#6B7280]">Developer</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <TrendingUp className="w-4 h-4 text-[#B8934A] mb-1" />
-              <span className="text-[10px] font-bold text-[#374151] leading-tight">A Better</span>
-              <span className="text-[9px] text-[#6B7280]">Tomorrow</span>
-            </div>
-          </div>
-
-          {/* Slogan in Elegant Cursive Calligraphy */}
-          <div className="text-right pr-2 pt-1">
+        {/* Footer Brand & Attributions */}
+        <div className="mt-2 space-y-2">
+          {/* Slogan */}
+          <div className="text-center">
             <span
               className="text-xs sm:text-sm text-[#8C6B24] font-serif italic tracking-wide"
               style={{ fontFamily: '"Brush Script MT", "Caveat", "Great Vibes", cursive, serif' }}
@@ -604,7 +547,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </span>
           </div>
 
-          {/* Required Copyright & Developer Attribution */}
+          {/* Attributions (Required by Contract) */}
           <div className="pt-2 text-center text-[10px] text-[#9CA3AF] space-y-0.5 border-t border-[#E5E7EB]/50 mt-1">
             <p className="font-medium text-[#6B7280]">© 2026 TrendFlux Digital. All Rights Reserved.</p>
             <p className="font-semibold text-[#8C6B24]">Developed & Powered by Zahid Hasan Emon.</p>
@@ -612,101 +555,78 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         </div>
       </div>
 
-      {/* MODAL 1: EDIT COORDINATOR PROFILE MODAL */}
-      {editingCoordinator && (
+      {/* MODAL 1: COORDINATOR CONFIRMATION POPUP (CONTRACT SECTION 5.B) */}
+      {selectedCoordinatorProfile && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-4 border border-[#E8DFCF] shadow-2xl text-left space-y-3">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 border border-[#E8DFCF] shadow-2xl text-left space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[#E5E7EB]">
               <div className="flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-[#B8934A]" />
-                <h3 className="text-sm font-extrabold text-[#111827]">
-                  Edit {editingCoordinator.title}
-                </h3>
+                <div className="w-7 h-7 rounded-lg bg-[#FAF6EE] border border-[#E8DFCF] flex items-center justify-center text-[#8C6B24]">
+                  <Layers className="w-4 h-4 text-[#B8934A]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-[#111827]">
+                    Coordinator Deck Confirmation
+                  </h3>
+                  <span className="text-[10.5px] text-[#6B7280]">Floor Lead Dispatch Authorization</span>
+                </div>
               </div>
               <button
                 type="button"
-                onClick={() => setEditingCoordinator(null)}
+                onClick={() => setSelectedCoordinatorProfile(null)}
                 className="p-1 rounded-lg text-[#6B7280] hover:text-[#111827] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveCoordinator} className="space-y-3 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold text-[#374151]">Coordinator Full Name</label>
-                <input
-                  type="text"
-                  value={editingCoordinator.name}
-                  onChange={(e) =>
-                    setEditingCoordinator({ ...editingCoordinator, name: e.target.value })
-                  }
-                  required
-                  className="w-full h-9 px-2.5 rounded-lg border border-[#D1D5DB] focus:border-[#B8934A] outline-none font-semibold text-[#111827]"
-                />
-              </div>
+            <p className="text-xs text-[#4B5563] leading-relaxed">
+              Please verify your authenticated coordinator identity before accessing the real-time floor dispatch queue:
+            </p>
 
-              <div className="space-y-1">
-                <label className="font-bold text-[#374151]">Assigned Desk & Territory</label>
-                <input
-                  type="text"
-                  value={editingCoordinator.desk}
-                  onChange={(e) =>
-                    setEditingCoordinator({ ...editingCoordinator, desk: e.target.value })
-                  }
-                  required
-                  className="w-full h-9 px-2.5 rounded-lg border border-[#D1D5DB] focus:border-[#B8934A] outline-none text-[#111827]"
-                />
+            {/* Authenticated Profile Info (From Real Profile) */}
+            <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E8DFCF] space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[#6B7280] font-medium">Name:</span>
+                <span className="font-extrabold text-[#111827]">{selectedCoordinatorProfile.name}</span>
               </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[#6B7280] font-medium">Employee ID:</span>
+                <span className="font-mono font-bold text-[#8C6B24]">{selectedCoordinatorProfile.employeeId}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[#6B7280] font-medium">Phone:</span>
+                <span className="font-mono font-semibold text-[#111827]">{selectedCoordinatorProfile.phone}</span>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-[#E5E7EB]/60">
+                <span className="text-[#6B7280] font-medium">Assigned Role:</span>
+                <span className="font-semibold text-[#111827]">{selectedCoordinatorProfile.role}</span>
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="font-bold text-[#374151]">Employee ID</label>
-                  <input
-                    type="text"
-                    value={editingCoordinator.employeeId}
-                    onChange={(e) =>
-                      setEditingCoordinator({ ...editingCoordinator, employeeId: e.target.value })
-                    }
-                    required
-                    className="w-full h-9 px-2.5 rounded-lg border border-[#D1D5DB] focus:border-[#B8934A] outline-none font-mono text-[#111827]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-[#374151]">Phone Number</label>
-                  <input
-                    type="text"
-                    value={editingCoordinator.phone}
-                    onChange={(e) =>
-                      setEditingCoordinator({ ...editingCoordinator, phone: e.target.value })
-                    }
-                    required
-                    className="w-full h-9 px-2.5 rounded-lg border border-[#D1D5DB] focus:border-[#B8934A] outline-none font-mono text-[#111827]"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingCoordinator(null)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-[#4B5563] hover:bg-[#F3F4F6] cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#8C6B24] text-white hover:bg-[#785B1E] cursor-pointer shadow-2xs"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
+            <div className="pt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedCoordinatorProfile(null)}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold text-[#4B5563] hover:bg-[#F3F4F6] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmCoordinatorDeck}
+                disabled={isLoading}
+                className="px-5 py-2 rounded-xl text-xs font-bold bg-[#111827] hover:bg-[#1F2937] text-white cursor-pointer shadow-xs flex items-center gap-1.5"
+              >
+                <span>Confirm & Enter Deck</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#E9CE88]" />
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* MODAL 2: UNLOCK PIN MODAL (EXECUTIVE HQ & IT CONSOLE) */}
+      {/* MODAL 2: UNLOCK PIN MODAL (EXECUTIVE HQ & IT CONSOLE - CONTRACT SECTION 5.C, 5.D, 6) */}
       {pinModalConfig?.isOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
           <div className="bg-white rounded-2xl w-full max-w-sm p-5 border border-[#E8DFCF] shadow-2xl text-left space-y-4">
@@ -717,7 +637,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   <h3 className="text-sm font-extrabold text-[#111827]">
                     Unlock {pinModalConfig.roleTitle}
                   </h3>
-                  <span className="text-[10.5px] text-[#6B7280]">4-Digit Executive Passcode</span>
+                  <span className="text-[10.5px] text-[#6B7280]">Security Passcode Required</span>
                 </div>
               </div>
               <button
@@ -734,7 +654,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </p>
 
             {pinError && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-800 text-xs p-2 rounded-xl">
+              <div className="bg-rose-50 border border-rose-200 text-rose-800 text-xs p-2.5 rounded-xl">
                 {pinError}
               </div>
             )}
@@ -755,18 +675,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 />
               </div>
 
-              {/* Quick Fill Pin Chip */}
-              <div className="flex items-center justify-between text-xs pt-1">
-                <span className="text-[11px] text-[#6B7280]">Default Auth PIN:</span>
-                <button
-                  type="button"
-                  onClick={() => setEnteredPin(pinModalConfig.defaultPin)}
-                  className="text-xs font-bold text-[#8C6B24] hover:underline cursor-pointer bg-[#FAF6EE] px-2 py-0.5 rounded-full border border-[#E8DFCF]"
-                >
-                  Fill PIN ({pinModalConfig.defaultPin})
-                </button>
-              </div>
-
               <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
@@ -781,7 +689,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-[#111827] hover:bg-[#1F2937] text-white cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
                   <KeyRound className="w-3.5 h-3.5 text-[#E9CE88]" />
-                  <span>Verify & Unlock</span>
+                  <span>Unlock PIN</span>
                 </button>
               </div>
             </form>

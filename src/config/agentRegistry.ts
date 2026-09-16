@@ -64,83 +64,11 @@ export interface VerifiedAgentRecord {
   territory: string;
 }
 
-export interface CoordinatorProfileItem {
-  id: string; // 'coord-001', 'coord-002', etc.
-  employeeId: string; // 'COORD001', 'COORD002', etc.
-  title: string; // 'Coordinator 001', 'Coordinator 002', etc.
-  name: string;
-  desk: string;
-  phone: string;
-  email: string;
-}
+export const AUTHORIZED_COORDINATOR_IDS = ['WIN2604', 'WIN2606'];
 
-const DEFAULT_COORDINATOR_PROFILES: CoordinatorProfileItem[] = [
-  {
-    id: 'coord-001',
-    employeeId: 'COORD001',
-    title: 'Coordinator 001',
-    name: 'Coordinator 001',
-    desk: 'Central Dispatch Desk',
-    phone: '+880 1713-000001',
-    email: 'coord001@ops.winstonebd.com',
-  },
-  {
-    id: 'coord-002',
-    employeeId: 'COORD002',
-    title: 'Coordinator 002',
-    name: 'Coordinator 002',
-    desk: 'Lead Influx Desk',
-    phone: '+880 1819-000002',
-    email: 'coord002@ops.winstonebd.com',
-  },
-  {
-    id: 'coord-003',
-    employeeId: 'COORD003',
-    title: 'Coordinator 003',
-    name: 'Coordinator 003',
-    desk: 'Floor Balance Desk',
-    phone: '+880 1912-000003',
-    email: 'coord003@ops.winstonebd.com',
-  },
-  {
-    id: 'coord-004',
-    employeeId: 'COORD004',
-    title: 'Coordinator 004',
-    name: 'Coordinator 004',
-    desk: 'Digital Ads & Intake Desk',
-    phone: '+880 1755-000004',
-    email: 'coord004@ops.winstonebd.com',
-  },
-];
-
-const COORD_STORAGE_KEY = 'winstone_coordinator_profiles_v1';
-
-export function getCoordinatorProfiles(): CoordinatorProfileItem[] {
-  try {
-    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(COORD_STORAGE_KEY) : null;
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-  } catch {
-    // fallback
-  }
-  return DEFAULT_COORDINATOR_PROFILES;
-}
-
-export function saveCoordinatorProfile(updated: CoordinatorProfileItem): CoordinatorProfileItem[] {
-  const current = getCoordinatorProfiles();
-  const next = current.map((item) => (item.id === updated.id ? { ...item, ...updated } : item));
-  try {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(COORD_STORAGE_KEY, JSON.stringify(next));
-    }
-  } catch {
-    // fallback
-  }
-  return next;
+export function isAuthorizedCoordinator(employeeId: string): boolean {
+  const norm = normalizeEmployeeId(employeeId);
+  return AUTHORIZED_COORDINATOR_IDS.includes(norm);
 }
 
 export const VERIFIED_WINSTONE_AGENTS: VerifiedAgentRecord[] = [
@@ -231,40 +159,13 @@ export function resolveAgentByIdentifier(rawIdentifier: string): VerifiedAgentRe
   const input = rawIdentifier.trim();
   const type = detectIdentifierType(input);
 
-  // Check custom/dynamic coordinator profiles
-  const coordinators = getCoordinatorProfiles();
-  const matchedCoord = coordinators.find(
-    (c) =>
-      c.employeeId.toLowerCase() === input.toLowerCase() ||
-      c.id.toLowerCase() === input.toLowerCase() ||
-      c.email.toLowerCase() === input.toLowerCase() ||
-      c.phone.replace(/\D/g, '') === input.replace(/\D/g, '') ||
-      c.name.toLowerCase() === input.toLowerCase()
-  );
-
-  if (matchedCoord) {
-    return {
-      agentId: `agt-${matchedCoord.id}`,
-      employeeId: matchedCoord.employeeId,
-      name: matchedCoord.name,
-      email: matchedCoord.email,
-      phone: matchedCoord.phone,
-      normalizedPhone: normalizePhone(matchedCoord.phone),
-      normalizedEmployeeId: matchedCoord.employeeId,
-      role: 'Lead Dispatch Coordinator',
-      territory: matchedCoord.desk,
-    };
-  }
-
   if (type === 'email') {
     const normEmail = normalizeEmail(input);
     return (
       VERIFIED_WINSTONE_AGENTS.find(
         (a) =>
           a.email.toLowerCase() === normEmail ||
-          normEmail.startsWith(a.employeeId.toLowerCase()) ||
-          (normEmail.includes('tanvir') && a.employeeId === 'WIN2601') ||
-          (normEmail.includes('nusrat') && a.employeeId === 'WIN2602')
+          normEmail.startsWith(a.employeeId.toLowerCase())
       ) || null
     );
   }

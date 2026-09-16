@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Lead, Agent } from '../types';
 import { TemperatureBadge, CategoryBadge } from './Badges';
+import { maskPhoneNumber } from '../utils/masking';
 
 interface CoordinatorDeckScreenProps {
   leads: Lead[];
@@ -147,7 +148,7 @@ export const CoordinatorDeckScreen: React.FC<CoordinatorDeckScreenProps> = ({
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-bold text-[#111827]">{lead.customerName}</span>
-                    <span className="text-[10px] font-mono text-[#6B7280]">{lead.phone}</span>
+                    <span className="text-[10px] font-mono text-[#6B7280]">{maskPhoneNumber(lead.phone)}</span>
                   </div>
                   <div className="text-[11px] text-[#4B5563] font-medium flex items-center gap-1 mt-0.5">
                     <Building2 className="w-3 h-3 text-[#B8934A]" />
