@@ -1,0 +1,13 @@
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_CRM_ENV?: string;
+  readonly VITE_CRM_BASE_URL?: string;
+  readonly VITE_SUPABASE_URL?: string;
+  readonly VITE_SUPABASE_ANON_KEY?: string;
+  readonly VITE_ENABLE_MOCK_FALLBACK?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

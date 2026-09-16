@@ -1,0 +1,6 @@
+{
+  "name": "Winstone Agent",
+  "description": "Enterprise sales agent application for Winstone Properties Ltd. featuring lead management, simulated telephony engine, follow-up scheduling, and real-time performance analytics.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
