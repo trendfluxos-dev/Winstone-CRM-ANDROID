@@ -9,9 +9,11 @@ import {
   CheckCircle2,
   ChevronRight,
   FileCode2,
+  Smartphone,
 } from 'lucide-react';
 import { Agent } from '../types';
 import { WinstoneLogo } from './WinstoneLogo';
+import { AndroidApkBuildModal } from './AndroidApkBuildModal';
 
 interface ProfileScreenProps {
   agent: Agent;
@@ -28,6 +30,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 }) => {
   const [showAbout, setShowAbout] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showApkModal, setShowApkModal] = useState(false);
 
   const getInitials = (name?: string) => {
     if (!name) return 'AG';
@@ -125,6 +128,32 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             </div>
           </div>
         )}
+
+        {/* Android APK Build Hub Banner */}
+        <div
+          onClick={() => setShowApkModal(true)}
+          className="bg-white text-[#0F172A] p-3.5 rounded-2xl border border-emerald-500/40 shadow-xs cursor-pointer hover:border-emerald-600 transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
+              <Smartphone className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold block text-[#0F172A] group-hover:text-emerald-700 transition-colors">
+                  Android APK Build & Git CI/CD Hub
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold">
+                  GitHub
+                </span>
+              </div>
+              <span className="text-[11px] text-[#64748B] block">
+                Automated release pipeline, Gradle commands & APK artifacts
+              </span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+        </div>
 
         {/* Kotlin & Architecture Inspection Banner */}
         {onOpenKotlinViewer && (
@@ -249,6 +278,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           </div>
         </div>
       )}
+
+      {/* Android APK Build Hub Modal */}
+      <AndroidApkBuildModal
+        isOpen={showApkModal}
+        onClose={() => setShowApkModal(false)}
+      />
     </div>
   );
 };

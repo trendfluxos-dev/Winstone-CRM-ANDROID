@@ -44,7 +44,7 @@ import {
 } from './components/ScheduleModals';
 import { KotlinCodeViewer } from './components/KotlinCodeViewer';
 import { SyncMonitorDrawer } from './components/SyncMonitorDrawer';
-import { CheckCircle2, BellRing, Sparkles, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, BellRing, Sparkles, AlertTriangle, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function App() {
   // Navigation & View Modes
@@ -62,6 +62,10 @@ export default function App() {
   const [pendingReport, setPendingReport] = useState<PendingReportState | null>(
     winstoneRoomDb.getPendingReport()
   );
+  const [isCheckingCrmReport, setIsCheckingCrmReport] = useState(false);
+  const [crmPingLatencyMs, setCrmPingLatencyMs] = useState<number | null>(null);
+  const [isSyncMismatch, setIsSyncMismatch] = useState(false);
+  const [syncMismatchReason, setSyncMismatchReason] = useState<string | null>(null);
   const [outcomeDialogData, setOutcomeDialogData] = useState<{
     lead: Lead;
     durationSeconds: number;
@@ -149,6 +153,151 @@ export default function App() {
     };
   }, []);
 
+  // Automatically attempt background ping to CRM API when pendingReport exists
+  // to verify if report was actually submitted but failed to clear locally in Room
+  useEffect(() => {
+    if (!pendingReport) {
+      setIsSyncMismatch(false);
+      setSyncMismatchReason(null);
+      setCrmPingLatencyMs(null);
+      return;
+    }
+
+    let isSubscribed = true;
+
+    const pingCrmReportStatus = async () => {
+      // If client is offline, do not falsely flag mismatch
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        return;
+      }
+
+      setIsCheckingCrmReport(true);
+      const startTime = performance.now();
+      try {
+        let serverReport: any = null;
+        let isNotFoundOrNoPending = false;
+
+        try {
+          serverReport = await crmDataSource.getPendingReport();
+        } catch (err: any) {
+          if (
+            err?.status === 404 ||
+            err?.name === 'CrmNotFoundError' ||
+            err?.message?.includes('not found') ||
+            err?.message?.includes('404')
+          ) {
+            isNotFoundOrNoPending = true;
+          } else {
+            console.warn('[PendingReport] Background ping notice:', err);
+          }
+        }
+
+        const elapsedMs = Math.max(1, Math.round(performance.now() - startTime));
+        if (isSubscribed) {
+          setCrmPingLatencyMs(elapsedMs);
+        }
+
+        if (!isSubscribed) return;
+
+        // Verify if report was actually submitted on CRM server but failed to clear locally
+        const isServerSubmitted =
+          serverReport?.status === 'submitted' ||
+          serverReport?.status === 'completed' ||
+          serverReport?.status === 'closed';
+
+        const isServerNoOpenReport =
+          isNotFoundOrNoPending ||
+          !serverReport ||
+          serverReport.pending === false ||
+          serverReport.report_id === null;
+
+        if (isServerSubmitted || isServerNoOpenReport) {
+          setIsSyncMismatch(true);
+          setSyncMismatchReason(
+            isServerSubmitted
+              ? 'Report was already submitted to CRM server, but remained in local Room buffer.'
+              : 'CRM API reports no open report (already submitted or closed remotely).'
+          );
+        } else {
+          setIsSyncMismatch(false);
+          setSyncMismatchReason(null);
+        }
+      } catch (err) {
+        const elapsedMs = Math.max(1, Math.round(performance.now() - startTime));
+        if (isSubscribed) {
+          setCrmPingLatencyMs(elapsedMs);
+        }
+        console.warn('[PendingReport] Error during background CRM ping:', err);
+      } finally {
+        if (isSubscribed) {
+          setIsCheckingCrmReport(false);
+        }
+      }
+    };
+
+    pingCrmReportStatus();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [pendingReport?.report_id]);
+
+  const handleRefreshPendingReportStatus = async () => {
+    if (!pendingReport) return;
+    setIsCheckingCrmReport(true);
+    const startTime = performance.now();
+    try {
+      let serverReport: any = null;
+      let isNotFoundOrNoPending = false;
+
+      try {
+        serverReport = await crmDataSource.getPendingReport();
+      } catch (err: any) {
+        if (
+          err?.status === 404 ||
+          err?.name === 'CrmNotFoundError' ||
+          err?.message?.includes('not found') ||
+          err?.message?.includes('404')
+        ) {
+          isNotFoundOrNoPending = true;
+        }
+      }
+
+      const elapsedMs = Math.max(1, Math.round(performance.now() - startTime));
+      setCrmPingLatencyMs(elapsedMs);
+
+      const isServerSubmitted =
+        serverReport?.status === 'submitted' ||
+        serverReport?.status === 'completed' ||
+        serverReport?.status === 'closed';
+
+      const isServerNoOpenReport =
+        isNotFoundOrNoPending ||
+        !serverReport ||
+        serverReport.pending === false ||
+        serverReport.report_id === null;
+
+      if (isServerSubmitted || isServerNoOpenReport) {
+        // Sync mismatch confirmed: Report was already submitted/closed remotely, so clear local buffer
+        winstoneRoomDb.clearPendingReport();
+        setPendingReport(null);
+        setIsSyncMismatch(false);
+        setSyncMismatchReason(null);
+        showToast('Sync mismatch resolved: Call report verified as already submitted to CRM. Local buffer cleared.');
+      } else {
+        setIsSyncMismatch(false);
+        setSyncMismatchReason(null);
+        showToast('Report is still pending submission on CRM server.');
+      }
+    } catch (err) {
+      const elapsedMs = Math.max(1, Math.round(performance.now() - startTime));
+      setCrmPingLatencyMs(elapsedMs);
+      showToast('Could not reach CRM API to verify report status.');
+    } finally {
+      setIsCheckingCrmReport(false);
+    }
+  };
+
   const loadRepositoryData = async () => {
     try {
       const [leadsData, followUpsData, visitsData, perfData] = await Promise.all([
@@ -217,7 +366,11 @@ export default function App() {
   // Telephony Handlers & Overlapping Call Guard
   const handleStartCall = async (lead: Lead) => {
     if (pendingReport) {
-      showToast('⚠️ Action Blocked: Complete your pending CRM call report before placing a new call.');
+      if (isSyncMismatch) {
+        showToast('⚠️ Sync Mismatch: Click "Refresh Status" on the banner above to clear the stale submitted report.');
+      } else {
+        showToast('⚠️ Action Blocked: Complete your pending CRM call report before placing a new call.');
+      }
       return;
     }
 
@@ -368,6 +521,9 @@ export default function App() {
 
     // 3. Clear pending report state in Room and trigger sync
     winstoneRoomDb.clearPendingReport();
+    setPendingReport(null);
+    setIsSyncMismatch(false);
+    setSyncMismatchReason(null);
     crmSyncWorker.triggerSync();
 
     // Update Performance Metrics
@@ -823,15 +979,91 @@ export default function App() {
           {pendingReport && (
             <div
               id="pending-report-banner"
-              className="bg-[#1C180E] text-[#DFCCA0] px-4 py-2 flex items-center justify-between text-xs font-semibold shadow-xs shrink-0 border-b border-[#D4AF37]/40 animate-in fade-in"
+              className={`px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold shadow-xs shrink-0 border-b animate-in fade-in transition-all ${
+                isSyncMismatch
+                  ? 'bg-[#2A1805] text-[#FDBA74] border-amber-500/60'
+                  : 'bg-[#1C180E] text-[#DFCCA0] border-[#D4AF37]/40'
+              }`}
             >
-              <div className="flex items-center gap-2 truncate">
-                <AlertTriangle className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                <span className="truncate text-white">
-                  Unsubmitted Call Report in Room (Duration: {pendingReport.duration_seconds}s)
-                </span>
+              <div className="flex items-center gap-2.5 min-w-0 max-w-full">
+                {isSyncMismatch ? (
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                )}
+                <div className="truncate">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-white font-bold truncate">
+                      {isSyncMismatch
+                        ? 'Potential Sync Mismatch Detected'
+                        : `Unsubmitted Call Report in Room (Duration: ${pendingReport.duration_seconds}s)`}
+                    </span>
+                    {(isCheckingCrmReport || crmPingLatencyMs !== null) && (
+                      <span
+                        id="crm-ping-latency-badge"
+                        className="text-[10px] font-mono text-[#D4AF37] flex items-center gap-1.5 bg-[#0A0A0C]/80 px-2 py-0.5 rounded border border-[#D4AF37]/35 shadow-xs"
+                      >
+                        {isCheckingCrmReport && (
+                          <>
+                            <RefreshCw className="w-3 h-3 animate-spin text-[#D4AF37]" />
+                            <span>Pinging CRM...</span>
+                          </>
+                        )}
+                        {crmPingLatencyMs !== null && (
+                          <span
+                            id="crm-ping-latency-value"
+                            className={`font-semibold px-1 rounded text-[10px] flex items-center gap-1 ${
+                              isCheckingCrmReport ? 'border-l border-[#D4AF37]/40 pl-1.5' : ''
+                            } ${
+                              crmPingLatencyMs < 250
+                                ? 'text-emerald-400 bg-emerald-950/40'
+                                : crmPingLatencyMs < 750
+                                ? 'text-amber-300 bg-amber-950/40'
+                                : 'text-rose-400 bg-rose-950/40'
+                            }`}
+                            title={`CRM API ping latency: ${crmPingLatencyMs}ms`}
+                          >
+                            {!isCheckingCrmReport && <span className="text-[#8E8E98] font-normal">API Latency:</span>}
+                            <span>{crmPingLatencyMs}ms</span>
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                  {isSyncMismatch && (
+                    <p className="text-[11px] text-amber-200/90 font-normal">
+                      {syncMismatchReason || 'Report was already submitted to CRM API, but failed to clear locally in Room.'}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-2 shrink-0 ml-auto">
+                {/* 'Refresh Status' indicator / action when sync mismatch is detected */}
+                {isSyncMismatch ? (
+                  <button
+                    id="refresh-status-btn"
+                    onClick={handleRefreshPendingReportStatus}
+                    disabled={isCheckingCrmReport}
+                    className="bg-amber-500 hover:bg-amber-400 text-neutral-950 px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5 active:scale-95"
+                    title="Re-verify with CRM API and clear stale local buffer"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isCheckingCrmReport ? 'animate-spin' : ''}`} />
+                    <span>Refresh Status</span>
+                  </button>
+                ) : (
+                  <button
+                    id="refresh-status-btn"
+                    onClick={handleRefreshPendingReportStatus}
+                    disabled={isCheckingCrmReport}
+                    className="bg-[#2A2315] hover:bg-[#382E1C] border border-[#D4AF37]/40 text-[#DFCCA0] px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1"
+                    title="Ping CRM API to verify report status"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isCheckingCrmReport ? 'animate-spin' : ''}`} />
+                    <span>Check CRM</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     const found = leads.find((l) => l.id === pendingReport.lead_id) || leads[0];
@@ -849,6 +1081,9 @@ export default function App() {
                 <button
                   onClick={() => {
                     winstoneRoomDb.clearPendingReport();
+                    setPendingReport(null);
+                    setIsSyncMismatch(false);
+                    setSyncMismatchReason(null);
                     showToast('Pending report buffer cleared from Room.');
                   }}
                   className="text-[#8E8E98] hover:text-white text-[11px] underline ml-1 cursor-pointer"
